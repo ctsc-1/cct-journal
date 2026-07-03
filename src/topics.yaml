@@ -1,0 +1,261 @@
+# Pool de sujets du Journal d'Alejandro — rotation anti-doublon 45 jours.
+# Marc peut éditer librement. Chaque sujet :
+#   - id : slug stable (utilisé pour dédoublonnage historique)
+#   - domain : kb_domain (cultura, gastronomie, turismo, patrimonio, naturaleza, costumbres, economia)
+#   - title : titre du billet (provisoire, Alejandro peut le raffiner)
+#   - angle : angle narratif à respecter
+#   - context : faits, lieux, personnages, détails concrets à intégrer
+#   - tags : liste d'étiquettes
+
+topics:
+
+  # ═══════════════════════════════════════ PATRIMOINE ═══════════════════════════════════════
+
+  - id: castillo-salobrena
+    domain: patrimonio
+    title: "El Castillo de Salobreña : la sentinela que vio pasar tres imperios"
+    angle: >
+      Raconter le château comme un vieil habitant qui a vu défiler Phéniciens, Romains, Nasrides,
+      Rois Catholiques. Mêler anecdotes historiques et vue actuelle.
+    context: |
+      - Fondation phénicienne probable (Salambina).
+      - Forteresse nasride XIIIe siècle, prison des derniers rois de Grenade (Boabdil).
+      - Restauration du XXe siècle par José Pardo Santayana.
+      - Vue à 360° : mer, sierra, vega cañera.
+      - Lieu emblématique de la silhouette blanche du village.
+    tags: [castillo, salobrena, historia, nasrides, fortaleza]
+
+  - id: moulins-orgiva
+    domain: patrimonio
+    title: "Los molinos de Órgiva : el agua, el trigo, el olvido"
+    angle: >
+      Les moulins hydrauliques des Alpujarras, patrimoine méconnu. Parler de
+      l'ingénierie mauresque de l'eau et de la mémoire des derniers meuniers.
+    context: |
+      - Acequias nasrides encore fonctionnelles.
+      - Moulins à farine et à huile entre Órgiva et Bubión.
+      - Ingénieurs andalous-musulmans du XIe siècle : Al-Razi, Ibn al-Awwam.
+      - Reconversion actuelle en centres d'interprétation.
+      - Détail : le bruit de la meule, la poussière blanche, l'odeur du pain.
+    tags: [orgiva, alpujarra, hidraulica, nasride, molinos]
+
+  - id: torres-almenara
+    domain: patrimonio
+    title: "Las torres-vigía de la Costa : cuando el mar traía piratas"
+    angle: >
+      Les 15+ torres almenaras de la côte (Almuñécar, Salobreña, Castell de Ferro) : système
+      de veille contre les pirates berbères du XVIe. Comparer avec la veille actuelle (drones, radars).
+    context: |
+      - Torre del Cambrón, Torre del Diablo, Torre de Carchuna.
+      - Système de signaux fumée/feu coordonné par le Capitán General de la Costa.
+      - Pirates d'Alger : razzias jusqu'au XVIIIe.
+      - Aujourd'hui : ruines, pas toutes classées.
+    tags: [torres, piratas, defensa, costa, xvi]
+
+  - id: acueductos-nasrides
+    domain: patrimonio
+    title: "Los acueductos invisibles : mil años de agua nazarí bajo nuestros pies"
+    angle: >
+      Le réseau hydraulique nasride qui a transformé la Costa Tropical en vergèr.
+      Plaidoyer pour redécouvrir et protéger ces infrastructures.
+    context: |
+      - Acueducto romano réutilisé par les Nasrides à Almuñécar.
+      - Système d'acequias pour la canne à sucre puis pour l'agriculture subtropicale.
+      - Les canaux de la vega de Motril.
+      - Menace : urbanisation, oubli, manque de classement patrimonial.
+    tags: [nasride, agua, acequia, infraestructura, patrimonio-invisible]
+
+  # ═══════════════════════════════════════ GASTRONOMIE ═══════════════════════════════════════
+
+  - id: migas-alpujarrenas
+    domain: gastronomie
+    title: "Las migas alpujarreñas : el pan del pastor, la memoria del frío"
+    angle: >
+      Le plat de migas comme témoin d'une économie de montagne. L'évocation sensorielle
+      (pain dur, chorizo, panceta, café). Un plat qui raconte la pauvreté digne.
+    context: |
+      - Origine : pan duro + agua + aceite + chorizo/panceta/tocino.
+      - "Día de las Migas" à Trevelez, Capileira, Lanjarón.
+      - Version côtière : con sardinas à Motril.
+      - Rituel : manger à la sartén commune.
+    tags: [migas, alpujarra, tradicion-culinaria, pastoreo]
+
+  - id: ron-costa-tropical
+    domain: gastronomie
+    title: "El ron de la Costa Tropical : el alma de la última caña de Europa"
+    angle: >
+      Le ron Montero à Motril, héritier direct des plantations nasrides de canne à sucre.
+      Raconter la seule distillerie européenne et son combat pour durer.
+    context: |
+      - Canne à sucre introduite en Al-Andalus au Xe siècle.
+      - Motril = dernière ville européenne à cultiver la canne (jusqu'en 2006).
+      - Bodega Ron Montero : 1963, reprise par la famille Montero.
+      - Goût : caramel, mélasse, réglisse, un peu de mer.
+      - Tourisme de distillerie en essor.
+    tags: [ron, cana-azucar, motril, destilacion, patrimonio-industrial]
+
+  - id: aguacates-costa-tropical
+    domain: gastronomie
+    title: "Los aguacates de la Costa : el oro verde que cambió las tierras de regadío"
+    angle: >
+      L'avocat Hass et Bacon, reconversion agricole des années 1980. Richesse + défis hydriques.
+    context: |
+      - Costa Tropical = 1ère région européenne de production.
+      - Climat subtropical unique en Europe continentale.
+      - Consommation d'eau controversée.
+      - Filière : Almuñécar, Otívar, Lentegí.
+      - Variétés : Hass (petit, ridé), Bacon (gros, lisse), Fuerte.
+    tags: [aguacate, subtropical, agricultura, almunecar, agua]
+
+  - id: chirimoya-tropical
+    domain: gastronomie
+    title: "La chirimoya : la fruta andina que se enamoró de Almuñécar"
+    angle: >
+      L'anone/chirimoya, introduite au XVIIIe depuis le Pérou, devenue emblématique de la Costa.
+      Texture, saveur, fragilité, symbole d'acclimatation.
+    context: |
+      - Origine : vallée du Loja (Équateur/Pérou).
+      - Introduction : 1757 par les frères Alcaraz.
+      - Variété Fino de Jete, DOP depuis 2002.
+      - Saveur : mangue + banane + ananas.
+      - Fragile, courte saison (octobre-janvier).
+    tags: [chirimoya, dop, subtropical, almunecar, jete]
+
+  # ═══════════════════════════════════════ CULTURE ═══════════════════════════════════════
+
+  - id: flamenco-alpujarra
+    domain: cultura
+    title: "El flamenco que baja de la Alpujarra : los cantes de la montaña"
+    angle: >
+      Le flamenco n'est pas que Séville. Les cantes de la Alpujarra, les tarantas mineras,
+      les peñas rurales. Lieux méconnus, voix solides.
+    context: |
+      - Peña flamenca de Motril.
+      - Tarantas : chant des mines (Almería, Jaén).
+      - Trovos alpujarreños : improvisation poétique.
+      - Festival Hispano-Morisco de Frigiliana.
+    tags: [flamenco, alpujarra, tarantas, peña, trovos]
+
+  - id: maestras-artesanas
+    domain: cultura
+    title: "Las Maestras Artesanas : guardianas del tiempo en Andalucía"
+    angle: >
+      La "Carta de Maestro Artesano" de la Junta d'Andalousie et les femmes qui la portent.
+      Métiers en voie de disparition, savoir-faire invisible.
+    context: |
+      - Statut "Maestro/a Artesano/a" créé par la Junta en 1999.
+      - Métiers : bordado, esparto, cerámica, curtido de cuero.
+      - Portraits possibles : Dolores Giménez (esparto à Níjar), Amparo Fernández (cerámica Fajalauza).
+      - Disparition prévue : 70% ont +55 ans.
+    tags: [artesania, maestras, tradicion, junta-andalucia, oficios]
+
+  - id: cronicas-charly
+    domain: cultura
+    title: "Charly y las tertulias del sábado : el pulso humano del Club"
+    angle: >
+      Charly, mascotte conversationnelle du Club, collecteur d'histoires. Évoquer les anecdotes
+      recueillies par les membres lors des tertulias (rencontres du samedi).
+    context: |
+      - Charly = agent IA sur la PWA, voix jeune, curieux.
+      - Tertulias du samedi organisées par les membres.
+      - Thèmes récurrents : mémoire locale, changements, humour andalou.
+    tags: [charly, tertulia, comunidad, memoria-local]
+
+  # ═══════════════════════════════════════ NATURE ═══════════════════════════════════════
+
+  - id: mulhacen
+    domain: naturaleza
+    title: "El Mulhacén : el techo de la península y el corazón espiritual de Andalucía"
+    angle: >
+      Le plus haut sommet d'Espagne continentale (3479 m), origine nasride du nom, randonnée accessible.
+      Moins célèbre que l'Everest mais plus accessible et habité d'histoire.
+    context: |
+      - Nom : Mulay Hasan, père de Boabdil, y serait enterré.
+      - 3 479 m, plus haut que n'importe quel sommet des Alpes françaises à part quelques-uns.
+      - Sierra Nevada Parc National depuis 1999.
+      - Accès : refuge de Poqueira, 7-8 h de marche.
+    tags: [mulhacen, sierra-nevada, cumbre, nasride]
+
+  - id: fossiles-miocene
+    domain: naturaleza
+    title: "Bajo las falas : los arrecifes fósiles del mar que ya no existe"
+    angle: >
+      Les falaises de la Costa Tropical cachent des récifs coralliens fossiles (Miocène).
+      Évocation géologique + émerveillement.
+    context: |
+      - Âge : 23-5 millions d'années.
+      - Mer Méditerranée en crise messinienne (5,96-5,33 MA) : assèchement total.
+      - Falaises de Maro-Cerro Gordo : témoins directs.
+      - Fossiles visibles : coraux, mollusques, requins.
+    tags: [geologia, miocene, mar-mediterraneo, fossiles, messiniense]
+
+  - id: lobos-marinos
+    domain: naturaleza
+    title: "Los cetáceos de Motril : delfines, ballenas y el mar que aún respira"
+    angle: >
+      L'observation des cétacés depuis le port de Motril. Vie marine moins visible mais toujours là.
+    context: |
+      - Espèces : delfines comunes, mulares, calderones, rorcuales.
+      - Couloir migratoire Méditerranée-Atlantique.
+      - Sorties en bateau depuis Motril (Dolphin Motril).
+      - Menaces : pollution, surpêche, plastiques.
+    tags: [cetaceos, motril, delfines, fauna-marina]
+
+  # ═══════════════════════════════════════ COSTUMBRES ═══════════════════════════════════════
+
+  - id: semana-santa-motril
+    domain: costumbres
+    title: "Semana Santa en Motril : la procesión que aún huele a incienso y a mar"
+    angle: >
+      Semaine sainte motrileña, ses confréries, ses chants, la sortie du Cristo de la Expiración.
+      Tradition religieuse mêlée à l'identité populaire.
+    context: |
+      - 10 cofradías actives.
+      - Moment fort : "La Madrugá" du Jueves Santo.
+      - Saeta : chant flamenco improvisé depuis les balcons.
+      - Costaleros : hommes portant le paso.
+    tags: [semana-santa, cofradia, saeta, religiosidad, motril]
+
+  - id: matanza
+    domain: costumbres
+    title: "La matanza : cuando el invierno era una celebración"
+    angle: >
+      La matanza du cochon, rituel hivernal désormais encadré, autrefois central dans la vie rurale.
+      Mémoire + regard critique actuel (bien-être animal).
+    context: |
+      - Traditionnelle en novembre-décembre.
+      - Réunion familiale + voisins.
+      - Produits : chorizo, morcilla, lomo en manteca, jamón.
+      - Réglementation actuelle : abatoirs certifiés obligatoires.
+    tags: [matanza, tradicion, invierno, embutidos]
+
+  # ═══════════════════════════════════════ ECONOMIE ═══════════════════════════════════════
+
+  - id: puerto-motril
+    domain: economia
+    title: "El puerto de Motril : el corazón económico silencioso de la Costa"
+    angle: >
+      Le port de Motril : hub méconnu entre Afrique et Europe. Lignes Nador/Melilla,
+      fret fruité, pêche. Impact économique régional.
+    context: |
+      - 4e port andalou en trafic passagers.
+      - Ligne régulière Motril-Melilla-Nador.
+      - Exports : avocats, chirimoyas, mangues.
+      - Plan d'expansion 2024-2030.
+    tags: [puerto, motril, economia, logistica, africa]
+
+  - id: uva-embarque
+    domain: economia
+    title: "La Uva de Embarque : cuando Granada conquistó los mercados del Norte"
+    angle: >
+      Le raisin Ohanes, "Uva del Barco", exporté massivement depuis Almería et Motril
+      vers l'Angleterre et la Russie au XIXe/XXe. Une épopée agricole oubliée.
+    context: |
+      - Variété Ohanes, peau épaisse, excellente conservation.
+      - Conditionnement en barils de liège avec sciure.
+      - Exports via Almería, Málaga, Motril.
+      - Déclin : années 1950, arrivée des raisins de table du Chili.
+    tags: [uva, ohanes, exportacion, xix, almeria]
+
+# Note : 15 sujets listés — rotation sur 45 jours, chaque sujet revient ~1 fois par mois.
+# Marc peut ajouter des sujets à volonté (géographie locale, personnages, événements).
