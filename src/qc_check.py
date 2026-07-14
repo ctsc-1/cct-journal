@@ -452,6 +452,20 @@ def check_language(article: Dict) -> QCRecord:
                      detail=f"0 marqueurs espagnols significatifs")
 
 
+def check_geo_intro(article):
+    """P2: Vérifie que les 200 premiers caractères sont GEO-optimisés."""
+    content = (article.get("content_es") or article.get("content") or "")
+    intro = content[:200].strip()
+    has_digits = bool(re.search(r'\d', intro))
+    communes_found = bool(re.search(r'(?i)(Motril|Almuñécar|Salobreña|La Herradura|Torrenueva|Castell|Vélez|Gualchos|Lújar|Molvízar|Rubite|Saleres|Ítrabo|Lobres|La Mamola|Calahonda|Carchuna|El Varadero)', intro))
+    is_poetic = bool(re.search(r'(?i)(soleil|rêve|paradis|magique|enchant|merveille|splendide)', intro))
+    if is_poetic or not has_digits:
+        return QCRecord("GEO-INTRO", "Intro non optimisee GEO",
+                        priority="P2", passed=False,
+                        detail=f"{'Poétique' if is_poetic else ''} {'Pas de chiffres' if not has_digits else ''} {'Pas de communes' if not communes_found else ''}")
+    return QCRecord("GEO-INTRO", "Intro GEO-optimisee", passed=True)
+
+
 # ─── QC COMPLET ──────────────────────────────────────────────────────────
 
 ALL_CHECKS = [
@@ -460,6 +474,8 @@ ALL_CHECKS = [
     ("📏 Longueur titres", check_title_length),
     ("🇫🇷 Langue FR", check_language),
     ("📝 Contenu trilingue", check_content),
+    ("🌍 Intro GEO", check_geo_intro),
+    ("🔎 Vérif faits", check_fact_verification),
     ("🖼️ Image hero", check_hero_image),
     ("📸 Images inline", check_inline_images),
     ("🖼️ Galerie", check_gallery),
@@ -597,3 +613,31 @@ if __name__ == "__main__":
     parser.add_argument("slug", help="Slug de l'article à vérifier")
     args = parser.parse_args()
     sys.exit(0 if run_qc(args.slug) else 1)
+
+
+def check_fact_verification(article):
+    """P2: Verification factuelle via SearXNG + Gateway (Sherlock Verify)."""
+    try:
+        from sherlock_verify import verify_article
+    except ImportError:
+        return QCRecord("VERIFY-FACTS", "Module sherlock_verify.py introuvable",
+                        priority="P2", passed=True, detail="Module non disponible")
+    content = (article.get("content_es") or "").strip()
+    if len(content) < 300:
+        return QCRecord("VERIFY-FACTS", "Contenu ES trop court",
+                        priority="P2", passed=True, detail="Skip")
+    try:
+        result = verify_article(content, lang="es")
+    except Exception as e:
+        return QCRecord("VERIFY-FACTS", "Erreur",
+                        priority="P2", passed=True, detail=str(e)[:200])
+    sc = result.get("score_global", 10)
+    nc = result.get("nb_confirme", 0)
+    nx = result.get("nb_contredit", 0)
+    nv = result.get("nb_non_verifiable", 0)
+    ok = nx == 0
+    d = f"Score: {sc}/10 | {nc}c {nx}x {nv}?"
+    if not ok:
+        d += " | CONTRADICTIONS!"
+    return QCRecord("VERIFY-FACTS", "Verification factuelle (SearXNG + Gateway)",
+                    priority="P2", passed=ok, detail=d)
