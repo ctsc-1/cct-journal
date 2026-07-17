@@ -555,7 +555,20 @@ def report(results: List[QCRecord], slug: str) -> Dict:
 
 
 def print_report(report_data: Dict):
-    """Affiche le rapport QC dans les logs."""
+    """Affiche le rapport QC formaté."""
+
+def qc_errors_to_feedback(slug: str, results: list) -> str | None:
+    """Convertit les erreurs QC en feedback structuré pour le retry.
+    Retourne None si tout est OK."""
+    if not results:
+        return None
+    failures = [r for r in results if isinstance(r, QCRecord) and not r.passed]
+    if not failures:
+        return None
+    lines = ["## Problèmes qualité détectés par le QC :"]
+    for f in failures:
+        lines.append(f"- **{f.code}** ({f.label}) : {f.detail}")
+    return "\n".join(lines)
     from datetime import datetime
     dt = datetime.fromisoformat(report_data["timestamp"])
 
