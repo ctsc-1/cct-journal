@@ -18,6 +18,7 @@ Checklist QC :
 """
 from __future__ import annotations
 import json
+import re
 import logging
 import os
 import subprocess
@@ -467,22 +468,7 @@ def check_geo_intro(article):
 
 
 # ─── QC COMPLET ──────────────────────────────────────────────────────────
-
-ALL_CHECKS = [
-    ("🔤 Sous-titres", check_subtitle),
-    ("🌐 Titres trilingues", check_trilingual_titles),
-    ("📏 Longueur titres", check_title_length),
-    ("🇫🇷 Langue FR", check_language),
-    ("📝 Contenu trilingue", check_content),
-    ("🌍 Intro GEO", check_geo_intro),
-    ("🔎 Vérif faits", check_fact_verification),
-    ("🖼️ Image hero", check_hero_image),
-    ("📸 Images inline", check_inline_images),
-    ("🖼️ Galerie", check_gallery),
-    ("🎙️ Podcast audio", check_podcast),
-    ("🔗 API accessible", check_api),
-    ("🏷️ Métadonnées", check_metadata),
-]
+# ALL_CHECKS déplacé après la définition de check_fact_verification
 
 
 def run_full_qc(slug: str) -> List[QCRecord]:
@@ -641,3 +627,22 @@ def check_fact_verification(article):
         d += " | CONTRADICTIONS!"
     return QCRecord("VERIFY-FACTS", "Verification factuelle (SearXNG + Gateway)",
                     priority="P2", passed=ok, detail=d)
+
+
+# ─── ALL_CHECKS (après toutes les définitions de fonctions) ───────────
+
+ALL_CHECKS = [
+    ("🔤 Sous-titres", check_subtitle),
+    ("🌐 Titres trilingues", check_trilingual_titles),
+    ("📏 Longueur titres", check_title_length),
+    ("🇫🇷 Langue FR", check_language),
+    ("📝 Contenu trilingue", check_content),
+    ("🌍 Intro GEO", check_geo_intro),
+    ("🔎 Vérif faits", check_fact_verification),
+    ("🖼️ Image hero", check_hero_image),
+    ("📸 Images inline", check_inline_images),
+    ("🖼️ Galerie", check_gallery),
+    ("🎙️ Podcast audio", check_podcast),
+    ("🔗 API accessible", check_api),
+    ("🏷️ Métadonnées", check_metadata),
+]

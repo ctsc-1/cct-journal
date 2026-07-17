@@ -15,6 +15,8 @@ import time
 from typing import Dict, List, Optional
 
 import httpx
+import sys; sys.path.insert(0, "/srv/rag-engine")
+from pipeline.model_env import get_model
 
 logger = logging.getLogger("cct-journal.sherlock-verify")
 
@@ -43,7 +45,7 @@ def _gateway_chat(messages: list, max_tokens: int = 500, temperature: float = 0.
     resp = httpx.post(
         GATEWAY_CHAT_URL,
         json={
-            "model": "gemini-3.1-flash-lite",
+            "model": get_model("FASTCHECK", "gemini-3.5-flash"),
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,

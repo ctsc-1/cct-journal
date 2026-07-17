@@ -1,0 +1,198 @@
+2026-06-24 06:40:31,127 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-24 06:40:31,128 INFO cct-journal.podcast: 📝 Script podcast: 2524 chars (433 mots)
+2026-06-24 06:40:31,129 INFO cct-journal.podcast: 🔊 TTS...
+2026-06-24 06:41:32,260 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-24 06:41:35,783 INFO cct-journal.podcast: ✅ Podcast: enquetes-dossiers-2026-06-24-es.mp3 (1260KB, ~168s)
+2026-06-24 06:41:35,794 INFO cct-journal.podcast: 💾 audio_url saved: /api/static/audio/articles/enquetes-dossiers-2026-06-24-es.mp3
+2026-06-24 06:41:35,794 INFO cct-journal.main:    ✅ Podcast: /api/static/audio/articles/enquetes-dossiers-2026-06-24-es.mp3 (1260KB, ~168s)
+2026-06-24 06:41:35,795 INFO cct-journal.main: 📊 Phase 6: Contrôle Qualité...
+2026-06-24 06:41:35,887 INFO httpx: HTTP Request: GET https://clubcostatropical.es/api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-24-hero.webp "HTTP/1.1 200 OK"
+2026-06-24 06:41:35,967 INFO httpx: HTTP Request: GET https://clubcostatropical.es/api/static/audio/articles/enquetes-dossiers-2026-06-24-es.mp3 "HTTP/1.1 200 OK"
+2026-06-24 06:41:36,090 INFO httpx: HTTP Request: GET https://clubcostatropical.es/api/blog/c7f05166-0633-4ea5-82ba-b2cebddd26f3 "HTTP/1.1 200 OK"
+2026-06-24 06:41:36,091 INFO cct-journal.qc: 
+2026-06-24 06:41:36,091 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-24 06:41:36,091 INFO cct-journal.qc: 📊 CONTRÔLE QUALITÉ — Journal CCT
+2026-06-24 06:41:36,091 INFO cct-journal.qc:     Article: enquetes-dossiers-2026-06-24
+2026-06-24 06:41:36,091 INFO cct-journal.qc:     Date: 2026-06-24 04:41
+2026-06-24 06:41:36,091 INFO cct-journal.qc:     Verdict: ✅ PASS
+2026-06-24 06:41:36,091 INFO cct-journal.qc:     Score: 11/11
+2026-06-24 06:41:36,091 INFO cct-journal.qc:     Tout est vert
+2026-06-24 06:41:36,091 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] SLUG: Slug OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] SUBTITLE: Subtitle valide (pas d'image markdown)
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] TRILING-TITLE: Titres trilingues OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → FR='Chronique du ravin et des nouv' ES='Crónica del Barranco y los nue' EN='Chronicle of the Ravine and th'
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] TITLE-LEN: Titres taille OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] CONTENT: Contenu trilingue OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → FR=4546c ES=4350c EN=4237c
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] HERO: Image hero OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → 156KB — HTTP 200
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] INLINE-IMG: Images inline OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → fr(5), es(5), en(5)
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] GALLERY: Galerie OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → 4 image(s)
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] AUDIO: Podcast OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → 1260KB — HTTP 200
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] API: Article accessible via API
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → UUID c7f05166-063... → HTTP 200
+2026-06-24 06:41:36,091 INFO cct-journal.qc:   ✅ [🔴P1] METADATA: Métadonnées OK
+2026-06-24 06:41:36,091 INFO cct-journal.qc:      → WC=654
+2026-06-24 06:41:36,091 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-24 06:41:36,091 INFO cct-journal.qc: ✅ TOUT EST VERT
+2026-06-24 06:41:36,091 INFO cct-journal.main:    ✅ QC PASS
+2026-06-24 06:41:36,091 INFO cct-journal.main: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-24 06:41:36,091 INFO cct-journal.main: ✅ Journal terminé en 165.2s
+2026-06-25 06:32:20,544 INFO cct-journal.main: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-25 06:32:20,545 INFO cct-journal.main: 📰 Journal CCT — start
+2026-06-25 06:32:20,545 INFO cct-journal.rotor: 🎯 Catégorie du jour [1/11] : Enquêtes & Dossiers
+2026-06-25 06:32:30,365 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-25 06:32:30,366 INFO cct-journal.rotor: 📌 Sujet généré: La reconversión del sector subtropical
+2026-06-25 06:32:30,366 INFO cct-journal.main: Sujet du jour (rotor): enquetes-dossiers-2026-06-25 (investigacion) — La reconversión del sector subtropical
+2026-06-25 06:32:30,366 INFO cct-journal.main: 🔍 Phase 1: Deep Search...
+2026-06-25 06:32:30,376 INFO cct-journal.deepsearch: 🔍 DeepSearch: enquetes-dossiers-2026-06-25 — La reconversión del sector subtropical
+2026-06-25 06:33:16,112 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/deep-research "HTTP/1.1 200 OK"
+2026-06-25 06:33:16,112 INFO cct-journal.deepsearch:    → 2006 chars, 8 sources, 0.00914€
+2026-06-25 06:33:16,124 INFO cct-journal.deepsearch: 💾 Cache SAVED: ceb797e27d117389f45c75fba2697aba
+2026-06-25 06:33:16,124 INFO cct-journal.main:    → 2006 chars, 8 sources
+2026-06-25 06:33:16,124 INFO cct-journal.main: 📝 Phase 2: Génération trilingue...
+2026-06-25 06:33:16,124 INFO cct-journal.synthesize: Generating ES — topic=enquetes-dossiers-2026-06-25 domain=investigacion
+2026-06-25 06:33:22,270 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-25 06:33:22,271 INFO cct-journal.synthesize: ES generated — 5031 chars (854 mots)
+2026-06-25 06:33:22,271 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-25 06:33:26,349 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-25 06:33:26,350 INFO cct-journal.synthesize:   → 5171 chars (813 mots)
+2026-06-25 06:33:26,350 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-25 06:33:29,955 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-25 06:33:29,956 INFO cct-journal.synthesize:   → 4881 chars (814 mots)
+2026-06-25 06:33:29,956 INFO cct-journal.main:    ES: 5031 chars (854 mots)
+2026-06-25 06:33:29,956 INFO cct-journal.main:    FR: 5171 chars (813 mots)
+2026-06-25 06:33:29,956 INFO cct-journal.main:    EN: 4881 chars (814 mots)
+2026-06-25 06:33:29,956 INFO cct-journal.main: 🎭 Phase 3: Humanisation anti-IA...
+2026-06-25 06:33:29,958 INFO cct-journal.humanize: 🤖 Humanize [es]: score 0% → 0% | fixes=0 | acceptable=✅
+2026-06-25 06:33:29,965 INFO cct-journal.humanize: 🤖 Humanize [fr]: score 0% → 0% | fixes=0 | acceptable=✅
+2026-06-25 06:33:29,967 INFO cct-journal.humanize: 🤖 Humanize [en]: score 0% → 0% | fixes=0 | acceptable=✅
+2026-06-25 06:33:29,967 INFO cct-journal.main:    ES: ✅ propre (score 0%)
+2026-06-25 06:33:29,967 INFO cct-journal.main:    FR: ✅ propre (score 0%)
+2026-06-25 06:33:29,967 INFO cct-journal.main:    EN: ✅ propre (score 0%)
+2026-06-25 06:33:29,967 INFO cct-journal.main:    Score global: 0%
+2026-06-25 06:33:29,967 INFO cct-journal.main: 🎬 Phase 3b: Planification narrative des images...
+2026-06-25 06:33:29,967 INFO cct-journal.narrative: 🎬 Planification narrative: 4 section(s) détectée(s)
+2026-06-25 06:33:29,981 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 403 Forbidden"
+2026-06-25 06:33:29,982 WARNING cct-journal.narrative: ⚠️ gemini-3.1-pro-preview error, fallback vers gemini-3-flash-preview
+2026-06-25 06:33:42,440 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    📍 Marqueur [[IMG:section-1]] inséré après ## El fin de la tiranía del aguacate
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    📍 Marqueur [[IMG:section-2]] inséré après ## La pitaya como nueva bandera
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    📍 Marqueur [[IMG:section-3]] inséré après ## Biotecnología contra el residuo cero
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    📍 Marqueur [[IMG:section-4]] inséré après ## La cultura del agua frente al azar
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    📍 Marqueur [[IMG:hero]] inséré après le titre
+2026-06-25 06:33:42,441 INFO cct-journal.narrative: ✅ Planification: 5 image(s) planifiée(s)
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    [hero   ] Fotografía cinematográfica de gran angular al amanecer desde un mirador en Almuñ...
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    [section] Retrato periodístico de Paco, un agricultor veterano de piel curtida, trabajando...
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    [section] Primer plano estético y detallado de una hilera de pitayas en plena floración de...
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    [section] Plano medio de un técnico de campo operando un dron de monitorización multiespec...
+2026-06-25 06:33:42,441 INFO cct-journal.narrative:    [section] Macrofotografía de un sensor de humedad de acero inoxidable insertado en el suel...
+2026-06-25 06:33:42,442 INFO cct-journal.main: 🖼️ Phase 4: Studio photo...
+2026-06-25 06:33:42,442 INFO cct-journal.images: 📸 Studio photo: 5 image(s) planifiée(s)
+2026-06-25 06:33:50,642 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-25 06:33:50,982 INFO cct-journal.images:    Optimisé: 1950KB → 197KB WebP (10%)
+2026-06-25 06:33:51,103 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-25-hero.webp (Position: Bas-Droite)
+2026-06-25 06:33:51,105 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-25-hero.webp
+2026-06-25 06:33:51,105 INFO cct-journal.images:    🖼️ Hero: enquetes-dossiers-2026-06-25-hero.webp (208KB)
+2026-06-25 06:33:56,458 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-25 06:33:56,760 INFO cct-journal.images:    Optimisé: 2288KB → 321KB WebP (14%)
+2026-06-25 06:33:56,905 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-25-section-1.webp (Position: Bas-Droite)
+2026-06-25 06:33:56,908 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-25-section-1.webp
+2026-06-25 06:33:56,908 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-25-section-1.webp (343KB)
+2026-06-25 06:34:03,751 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-25 06:34:04,021 INFO cct-journal.images:    Optimisé: 1774KB → 119KB WebP (7%)
+2026-06-25 06:34:04,131 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-25-section-2.webp (Position: Bas-Droite)
+2026-06-25 06:34:04,133 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-25-section-2.webp
+2026-06-25 06:34:04,134 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-25-section-2.webp (125KB)
+2026-06-25 06:34:11,062 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-25 06:34:11,390 INFO cct-journal.images:    Optimisé: 2212KB → 303KB WebP (14%)
+2026-06-25 06:34:11,533 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-25-section-3.webp (Position: Bas-Droite)
+2026-06-25 06:34:11,534 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-25-section-3.webp
+2026-06-25 06:34:11,535 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-25-section-3.webp (325KB)
+2026-06-25 06:34:16,652 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-25 06:34:16,947 INFO cct-journal.images:    Optimisé: 1908KB → 187KB WebP (10%)
+2026-06-25 06:34:17,071 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-25-section-4.webp (Position: Bas-Droite)
+2026-06-25 06:34:17,072 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-25-section-4.webp
+2026-06-25 06:34:17,072 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-25-section-4.webp (199KB)
+2026-06-25 06:34:17,072 INFO cct-journal.images:    📄 Marqueur [[IMG:hero]] → ![]() hero
+2026-06-25 06:34:17,072 INFO cct-journal.images:    📄 Marqueur [[IMG:section-1]] → ![]() section
+2026-06-25 06:34:17,072 INFO cct-journal.images:    📄 Marqueur [[IMG:section-2]] → ![]() section
+2026-06-25 06:34:17,072 INFO cct-journal.images:    📄 Marqueur [[IMG:section-3]] → ![]() section
+2026-06-25 06:34:17,072 INFO cct-journal.images:    📄 Marqueur [[IMG:section-4]] → ![]() section
+2026-06-25 06:34:17,072 INFO cct-journal.images:    Hero: ✅ | Sections: 4 | Texte: ✅
+2026-06-25 06:34:17,073 INFO cct-journal.main: 💾 Phase 5: Publication DB...
+2026-06-25 06:34:17,086 INFO cct-journal.publish: ✅ Article publié: metamorfosis-bajo-el-sol-de-salitre
+2026-06-25 06:34:17,086 INFO cct-journal.publish:    ES=5636c (879 mots) | FR=5776c (838 mots) | EN=5486c (839 mots)
+2026-06-25 06:34:17,086 INFO cct-journal.publish:    Catégorie: investigacion → c3d1056a-ccca-45e6-ac0a-42f2e30c8c2b
+2026-06-25 06:34:17,087 INFO cct-journal.main: Published : {'es': 1, 'fr': 2, 'en': 3}
+2026-06-25 06:34:17,214 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-25-hero.webp (Position: Bas-Droite)
+2026-06-25 06:34:17,217 INFO cct-journal.publish: ✨ AI badge applied: enquetes-dossiers-2026-06-25-hero.webp
+2026-06-25 06:34:17,217 INFO cct-journal.main: ✨ Badge IA appliqué sur l'image hero
+2026-06-25 06:34:17,217 INFO cct-journal.main: 🎙️ Phase 5c: Podcast audio...
+2026-06-25 06:34:17,217 INFO cct-journal.podcast: 🎙️ Génération podcast pour 'La reconversión del sector subtropical'
+2026-06-25 06:34:31,136 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-25 06:34:31,136 INFO cct-journal.podcast: 📝 Script podcast: 2073 chars (345 mots)
+2026-06-25 06:34:31,136 INFO cct-journal.podcast: 🔊 TTS...
+2026-06-25 06:35:27,698 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-25 06:35:30,655 INFO cct-journal.podcast: ✅ Podcast: enquetes-dossiers-2026-06-25-es.mp3 (1068KB, ~138s)
+2026-06-25 06:35:30,665 WARNING cct-journal.podcast: ⚠️ Slug 'enquetes-dossiers-2026-06-25' introuvable dans articles
+2026-06-25 06:35:30,667 INFO cct-journal.main:    ✅ Podcast: /api/static/audio/articles/enquetes-dossiers-2026-06-25-es.mp3 (1068KB, ~138s)
+2026-06-25 06:35:30,667 INFO cct-journal.main: 📊 Phase 6: Contrôle Qualité...
+2026-06-25 06:35:30,689 INFO cct-journal.qc: 
+2026-06-25 06:35:30,689 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-25 06:35:30,689 INFO cct-journal.qc: 📊 CONTRÔLE QUALITÉ — Journal CCT
+2026-06-25 06:35:30,689 INFO cct-journal.qc:     Article: enquetes-dossiers-2026-06-25
+2026-06-25 06:35:30,689 INFO cct-journal.qc:     Date: 2026-06-25 04:35
+2026-06-25 06:35:30,689 INFO cct-journal.qc:     Verdict: 🔴 FAIL
+2026-06-25 06:35:30,690 INFO cct-journal.qc:     Score: 1/2
+2026-06-25 06:35:30,690 INFO cct-journal.qc:     1 critique(s) — NE PAS PUBLIER
+2026-06-25 06:35:30,690 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-25 06:35:30,690 INFO cct-journal.qc:   ✅ [🔴P1] SLUG: Slug OK
+2026-06-25 06:35:30,690 INFO cct-journal.qc:   ❌ [🔴P1] DB: Article introuvable dans la DB
+2026-06-25 06:35:30,690 INFO cct-journal.qc:      → slug=enquetes-dossiers-2026-06-25
+2026-06-25 06:35:30,690 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-25 06:35:30,690 WARNING cct-journal.qc: ⚠️ 1 vérification(s) non passée(s)
+2026-06-25 06:35:30,690 WARNING cct-journal.main:    ⚠️ QC WARN — voir détails ci-dessus
+2026-06-25 06:35:30,690 INFO cct-journal.main: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-25 06:35:30,690 INFO cct-journal.main: ✅ Journal terminé en 190.1s
+2026-06-26 06:34:43,071 INFO cct-journal.main: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-26 06:34:43,071 INFO cct-journal.main: 📰 Journal CCT — start
+2026-06-26 06:34:43,071 INFO cct-journal.rotor: 🎯 Catégorie du jour [1/11] : Enquêtes & Dossiers
+2026-06-26 06:34:52,458 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-26 06:34:52,459 INFO cct-journal.rotor: 📌 Sujet généré: Erosión costera: el reto de las playas
+2026-06-26 06:34:52,459 INFO cct-journal.main: Sujet du jour (rotor): enquetes-dossiers-2026-06-26 (investigacion) — Erosión costera: el reto de las playas
+2026-06-26 06:34:52,459 INFO cct-journal.main: 🔍 Phase 1: Deep Search...
+2026-06-26 06:34:52,468 INFO cct-journal.deepsearch: 🔍 DeepSearch: enquetes-dossiers-2026-06-26 — Erosión costera: el reto de las playas
+2026-06-26 06:35:18,646 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/deep-research "HTTP/1.1 200 OK"
+2026-06-26 06:35:18,646 INFO cct-journal.deepsearch:    → 2311 chars, 5 sources, 0.00842€
+2026-06-26 06:35:18,658 INFO cct-journal.deepsearch: 💾 Cache SAVED: 0170797c61104d85d713ed0cdfeb372c
+2026-06-26 06:35:18,658 INFO cct-journal.main:    → 2311 chars, 5 sources
+2026-06-26 06:35:18,658 INFO cct-journal.main: 📝 Phase 2: Génération trilingue...
+2026-06-26 06:35:18,658 INFO cct-journal.synthesize: Generating ES — topic=enquetes-dossiers-2026-06-26 domain=investigacion
+2026-06-26 06:35:23,460 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-26 06:35:23,460 INFO cct-journal.synthesize: ES generated — 3906 chars (641 mots)
+2026-06-26 06:35:23,461 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-26 06:35:26,524 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-26 06:35:26,525 INFO cct-journal.synthesize:   → 4039 chars (648 mots)
+2026-06-26 06:35:26,525 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-26 06:35:29,122 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-26 06:35:29,123 INFO cct-journal.synthesize:   → 3702 chars (601 mots)
+2026-06-26 06:35:29,123 INFO cct-journal.main:    ES: 3906 chars (641 mots)
+2026-06-26 06:35:29,123 INFO cct-journal.main:    FR: 4039 chars (648 mots)
+2026-06-26 06:35:29,123 INFO cct-journal.main:    EN: 3702 chars (601 mots)
+2026-06-26 06:35:29,123 INFO cct-journal.main: 🎭 Phase 3: Humanisation anti-IA...
+2026-06-26 06:35:29,125 INFO cct-journal.humanize: 🤖 Humanize [es]: score 0% → 0% | fixes=0 | acceptable=✅
+2026-06-26 06:35:29,131 INFO cct-journal.humanize: 🤖 Humanize [fr]: score 0% → 0% | fixes=0 | acceptable=✅
+2026-06-26 06:35:29,132 INFO cct-journal.humanize: 🤖 Humanize [en]: score 0% → 0% | fixes=0 | acceptable=✅
+2026-06-26 06:35:29,133 INFO cct-journal.main:    ES: ✅ propre (score 0%)
+2026-06-26 06:35:29,133 INFO cct-journal.main:    FR: ✅ propre (score 0%)
+2026-06-26 06:35:29,133 INFO cct-journal.main:    EN: ✅ propre (score 0%)
+2026-06-26 06:35:29,133 INFO cct-journal.main:    Score global: 0%
+2026-06-26 06:35:29,133 INFO cct-journal.main: 🎬 Phase 3b: Planification narrative des images...
+2026-06-26 06:35:29,133 INFO cct-journal.narrative: 🎬 Planification narrative: 4 section(s) détectée(s)
+2026-06-26 06:35:29,147 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 403 Forbidden"
+2026-06-26 06:35:29,147 WARNING cct-journal.narrative: ⚠️ gemini-3.1-pro-preview error, fallback vers gemini-3-flash-preview

@@ -23,6 +23,8 @@ from typing import Optional, Dict
 
 import httpx
 import psycopg2
+import sys; sys.path.insert(0, "/srv/rag-engine")
+from pipeline.model_env import get_model
 
 logger = logging.getLogger("cct-journal.podcast")
 
@@ -164,7 +166,7 @@ def _generate_script(text: str, title: str, lang: str = "es") -> Optional[str]:
         r = httpx.post(
             f"{GATEWAY_URL}/v1/generate",
             json={
-                "model": "gemini-2.5-flash",
+                "model": get_model("TTS", "gemini-3.1-flash-tts-preview"),
                 "contents": f"{system_prompt}\n\n{user_prompt}",
                 "caller": "cct-journal-podcast",
             },

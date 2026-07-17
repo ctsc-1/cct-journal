@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, "/srv/cct-journal/src")
 sys.path.insert(0, "/srv/rag-engine")
 
-from images import generate_article_images_manual
+from images import generate_article_images_manual_sync
 
 logging.basicConfig(
     level=logging.INFO,
@@ -170,7 +170,7 @@ async def main():
         
         # Générer les images via le mode manuel
         try:
-            hero_url, gallery_json, text_with_images = generate_article_images_manual(
+            hero_url, gallery_json, text_with_images = generate_article_images_manual_sync(
                 article_text=text_es,
                 title=title,
                 slug=slug,

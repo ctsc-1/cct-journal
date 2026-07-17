@@ -1,0 +1,19 @@
+2026-05-20 11:07:39,635 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-20 11:07:39,673 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-20 11:07:39,673 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-20 11:07:39,673 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-20 11:07:39,742 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 429 Too Many Requests"
+2026-05-20 11:07:39,743 ERROR cct-journal.synthesize: Gateway HTTP 429: {"detail":"Kill-switch engaged (8.10/10.0 EUR)"}
+2026-05-21 11:01:11,357 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-21 11:01:11,392 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-21 11:01:11,392 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-21 11:01:11,392 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-21 11:01:16,354 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-21 11:01:16,355 INFO cct-journal.synthesize: ES generated — 3491 chars (636 mots)
+2026-05-21 11:01:16,355 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-21 11:01:19,332 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-21 11:01:19,333 INFO cct-journal.synthesize:   → 3687 chars (643 mots)
+2026-05-21 11:01:19,333 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-21 11:01:22,115 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-21 11:01:22,116 INFO cct-journal.synthesize:   → 3587 chars (649 mots)
+2026-05-21 11:01:22,116 INFO cct-journal.main: Génération OK : ES=3491c, FR=3687c, EN=3587c

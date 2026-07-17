@@ -1,0 +1,48 @@
+2026-06-08 11:08:47,484 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-08 11:08:47,504 INFO cct-journal.pick: Topic choisi (jamais publié): castillo-salobrena
+2026-06-08 11:08:47,504 INFO cct-journal.main: Sujet du jour : castillo-salobrena (patrimonio) — El Castillo de Salobreña : la sentinela que vio pasar tres imperios
+2026-06-08 11:08:47,504 INFO cct-journal.synthesize: Generating ES — topic=castillo-salobrena domain=patrimonio
+2026-06-08 11:08:52,466 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-08 11:08:52,466 INFO cct-journal.synthesize: ES generated — 3320 chars (573 mots)
+2026-06-08 11:08:52,467 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-08 11:08:55,704 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-08 11:08:55,705 INFO cct-journal.synthesize:   → 3528 chars (592 mots)
+2026-06-08 11:08:55,705 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-08 11:08:58,151 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-08 11:08:58,152 INFO cct-journal.synthesize:   → 3309 chars (574 mots)
+2026-06-08 11:08:58,152 INFO cct-journal.main: Génération OK : ES=3320c, FR=3528c, EN=3309c
+2026-06-08 11:08:58,170 INFO cct-journal.publish: Inserted doc_id=165 (es) — 573 mots, 2 min
+2026-06-08 11:09:00,753 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-08 11:09:00,766 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-08 11:09:00,767 INFO cct-journal.publish: Inserted doc_id=166 (fr) — 592 mots, 2 min
+2026-06-08 11:09:01,302 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-08 11:09:01,312 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-08 11:09:01,313 INFO cct-journal.publish: Inserted doc_id=167 (en) — 574 mots, 2 min
+2026-06-08 11:09:01,974 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-08 11:09:01,983 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-08 11:09:01,984 INFO cct-journal.main: Published : {'es': 165, 'fr': 166, 'en': 167}
+2026-06-08 11:09:01,984 INFO cct-journal.main: ━━━━━━━━━━ Done in 14.5s ━━━━━━━━━━
+2026-06-09 11:04:39,348 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-09 11:04:39,373 INFO cct-journal.pick: Topic choisi (jamais publié): moulins-orgiva
+2026-06-09 11:04:39,373 INFO cct-journal.main: Sujet du jour : moulins-orgiva (patrimonio) — Los molinos de Órgiva : el agua, el trigo, el olvido
+2026-06-09 11:04:39,374 INFO cct-journal.synthesize: Generating ES — topic=moulins-orgiva domain=patrimonio
+2026-06-09 11:04:45,156 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-09 11:04:45,157 INFO cct-journal.synthesize: ES generated — 4050 chars (710 mots)
+2026-06-09 11:04:45,157 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-09 11:04:48,902 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-09 11:04:48,902 INFO cct-journal.synthesize:   → 4260 chars (706 mots)
+2026-06-09 11:04:48,903 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-09 11:04:52,494 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-09 11:04:52,494 INFO cct-journal.synthesize:   → 4037 chars (697 mots)
+2026-06-09 11:04:52,494 INFO cct-journal.main: Génération OK : ES=4050c, FR=4260c, EN=4037c
+2026-06-09 11:04:52,520 INFO cct-journal.publish: Inserted doc_id=168 (es) — 710 mots, 3 min
+2026-06-09 11:04:53,098 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-09 11:04:53,122 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-09 11:04:53,124 INFO cct-journal.publish: Inserted doc_id=169 (fr) — 706 mots, 3 min
+2026-06-09 11:04:53,593 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-09 11:04:53,604 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-09 11:04:53,605 INFO cct-journal.publish: Inserted doc_id=170 (en) — 697 mots, 3 min
+2026-06-09 11:04:54,746 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-09 11:04:54,755 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-09 11:04:54,756 INFO cct-journal.main: Published : {'es': 168, 'fr': 169, 'en': 170}
+2026-06-09 11:04:54,757 INFO cct-journal.main: ━━━━━━━━━━ Done in 15.4s ━━━━━━━━━━

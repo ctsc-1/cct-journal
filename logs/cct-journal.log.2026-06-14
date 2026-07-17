@@ -1,0 +1,48 @@
+2026-06-13 11:09:38,615 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-13 11:09:38,637 INFO cct-journal.pick: Topic choisi (jamais publié): ron-costa-tropical
+2026-06-13 11:09:38,637 INFO cct-journal.main: Sujet du jour : ron-costa-tropical (gastronomie) — El ron de la Costa Tropical : el alma de la última caña de Europa
+2026-06-13 11:09:38,637 INFO cct-journal.synthesize: Generating ES — topic=ron-costa-tropical domain=gastronomie
+2026-06-13 11:09:46,192 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-13 11:09:46,193 INFO cct-journal.synthesize: ES generated — 5428 chars (918 mots)
+2026-06-13 11:09:46,193 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-13 11:09:50,781 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-13 11:09:50,782 INFO cct-journal.synthesize:   → 5765 chars (947 mots)
+2026-06-13 11:09:50,782 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-13 11:09:54,569 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-13 11:09:54,569 INFO cct-journal.synthesize:   → 5370 chars (919 mots)
+2026-06-13 11:09:54,569 INFO cct-journal.main: Génération OK : ES=5428c, FR=5765c, EN=5370c
+2026-06-13 11:09:54,607 INFO cct-journal.publish: Inserted doc_id=183 (es) — 918 mots, 4 min
+2026-06-13 11:09:55,125 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-13 11:09:55,150 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-13 11:09:55,151 INFO cct-journal.publish: Inserted doc_id=184 (fr) — 947 mots, 4 min
+2026-06-13 11:09:55,603 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-13 11:09:55,612 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-13 11:09:55,613 INFO cct-journal.publish: Inserted doc_id=185 (en) — 919 mots, 4 min
+2026-06-13 11:09:56,015 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-13 11:09:56,024 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-13 11:09:56,024 INFO cct-journal.main: Published : {'es': 183, 'fr': 184, 'en': 185}
+2026-06-13 11:09:56,025 INFO cct-journal.main: ━━━━━━━━━━ Done in 17.4s ━━━━━━━━━━
+2026-06-14 11:04:17,886 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-14 11:04:17,918 INFO cct-journal.pick: Topic choisi (jamais publié): aguacates-costa-tropical
+2026-06-14 11:04:17,918 INFO cct-journal.main: Sujet du jour : aguacates-costa-tropical (gastronomie) — Los aguacates de la Costa : el oro verde que cambió las tierras de regadío
+2026-06-14 11:04:17,918 INFO cct-journal.synthesize: Generating ES — topic=aguacates-costa-tropical domain=gastronomie
+2026-06-14 11:04:24,126 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-14 11:04:24,127 INFO cct-journal.synthesize: ES generated — 4676 chars (805 mots)
+2026-06-14 11:04:24,127 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-14 11:04:28,546 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-14 11:04:28,547 INFO cct-journal.synthesize:   → 4888 chars (800 mots)
+2026-06-14 11:04:28,547 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-14 11:04:31,794 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-14 11:04:31,795 INFO cct-journal.synthesize:   → 4532 chars (777 mots)
+2026-06-14 11:04:31,795 INFO cct-journal.main: Génération OK : ES=4676c, FR=4888c, EN=4532c
+2026-06-14 11:04:31,820 INFO cct-journal.publish: Inserted doc_id=186 (es) — 805 mots, 4 min
+2026-06-14 11:04:32,277 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-14 11:04:32,293 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-14 11:04:32,294 INFO cct-journal.publish: Inserted doc_id=187 (fr) — 800 mots, 4 min
+2026-06-14 11:04:32,712 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-14 11:04:32,722 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-14 11:04:32,724 INFO cct-journal.publish: Inserted doc_id=188 (en) — 777 mots, 3 min
+2026-06-14 11:04:33,088 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-14 11:04:33,097 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-14 11:04:33,098 INFO cct-journal.main: Published : {'es': 186, 'fr': 187, 'en': 188}
+2026-06-14 11:04:33,098 INFO cct-journal.main: ━━━━━━━━━━ Done in 15.2s ━━━━━━━━━━

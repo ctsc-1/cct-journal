@@ -1,0 +1,17 @@
+2026-05-01 11:09:25,875 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-01 11:09:25,900 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-01 11:09:25,900 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-01 11:09:25,900 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-01 11:09:34,367 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-01 11:09:34,368 INFO cct-journal.synthesize: ES generated — 5098 chars (922 mots)
+2026-05-01 11:09:34,368 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-01 11:09:39,334 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-01 11:09:39,334 INFO cct-journal.synthesize:   → 5416 chars (947 mots)
+2026-05-01 11:09:39,334 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-01 11:09:43,930 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-01 11:09:43,930 INFO cct-journal.synthesize:   → 5166 chars (922 mots)
+2026-05-01 11:09:43,930 INFO cct-journal.main: Génération OK : ES=5098c, FR=5416c, EN=5166c
+2026-05-02 11:09:41,111 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-02 11:09:41,134 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-02 11:09:41,134 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-02 11:09:41,134 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura

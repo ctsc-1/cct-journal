@@ -1,0 +1,24 @@
+2026-06-10 11:05:11,146 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-10 11:05:11,177 INFO cct-journal.pick: Topic choisi (jamais publié): torres-almenara
+2026-06-10 11:05:11,178 INFO cct-journal.main: Sujet du jour : torres-almenara (patrimonio) — Las torres-vigía de la Costa : cuando el mar traía piratas
+2026-06-10 11:05:11,178 INFO cct-journal.synthesize: Generating ES — topic=torres-almenara domain=patrimonio
+2026-06-10 11:05:16,089 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-10 11:05:16,090 INFO cct-journal.synthesize: ES generated — 3921 chars (664 mots)
+2026-06-10 11:05:16,090 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-10 11:05:19,461 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-10 11:05:19,462 INFO cct-journal.synthesize:   → 4115 chars (668 mots)
+2026-06-10 11:05:19,462 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-10 11:05:21,828 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-10 11:05:21,829 INFO cct-journal.synthesize:   → 3740 chars (627 mots)
+2026-06-10 11:05:21,829 INFO cct-journal.main: Génération OK : ES=3921c, FR=4115c, EN=3740c
+2026-06-10 11:05:21,852 INFO cct-journal.publish: Inserted doc_id=171 (es) — 664 mots, 3 min
+2026-06-10 11:05:22,292 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-10 11:05:22,306 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-10 11:05:22,307 INFO cct-journal.publish: Inserted doc_id=172 (fr) — 668 mots, 3 min
+2026-06-10 11:05:23,143 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-10 11:05:23,152 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-10 11:05:23,153 INFO cct-journal.publish: Inserted doc_id=173 (en) — 627 mots, 3 min
+2026-06-10 11:05:23,687 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-10 11:05:23,696 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-10 11:05:23,697 INFO cct-journal.main: Published : {'es': 171, 'fr': 172, 'en': 173}
+2026-06-10 11:05:23,697 INFO cct-journal.main: ━━━━━━━━━━ Done in 12.6s ━━━━━━━━━━

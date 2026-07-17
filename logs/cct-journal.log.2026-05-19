@@ -1,0 +1,6 @@
+2026-05-19 11:04:53,625 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-19 11:04:53,654 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-19 11:04:53,654 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-19 11:04:53,654 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-19 11:04:53,720 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 429 Too Many Requests"
+2026-05-19 11:04:53,721 ERROR cct-journal.synthesize: Gateway HTTP 429: {"detail":"Kill-switch engaged (8.05/10.0 EUR)"}

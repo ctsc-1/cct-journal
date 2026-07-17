@@ -12,7 +12,7 @@ from typing import Dict
 import httpx
 
 from config import (
-    GATEWAY_URL, GEN_MODEL,
+    GATEWAY_URL, GEN_MODEL, TRANSLATION_MODEL,
     SYSTEM_PROMPT_JOURNAL_ES, USER_PROMPT_JOURNAL_ES, TRANSLATE_PROMPT,
 )
 
@@ -59,7 +59,7 @@ def _deepseek_fallback(system: str, user: str, caller: str = "cct-journal") -> s
 
     resp = httpx.post(
         "https://api.deepseek.com/v1/chat/completions",
-        json={"model": "deepseek-chat", "messages": messages, "caller": caller},
+        json={"model": "deepseek-v4-flash", "messages": messages, "caller": caller},
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         timeout=180,
     )
@@ -126,8 +126,15 @@ def generate_spanish(topic: dict, date: datetime | None = None, deep_context: st
 
     if deep_context:
         user += f"\n\nINVESTIGACIÓN RECIENTE:\n{deep_context[:3000]}"
+
+    # Feedback QC pour les tentatives de correction automatique
+    qc_feedback = topic.get("qc_feedback", "")
+    if qc_feedback and len(qc_feedback) > 10:
+        user += f"\n\nFEEDBACK DE CONTROL DE CALIDAD (correcciones necesarias):\n{qc_feedback}"
+
     logger.info(f"Generating ES — topic={topic['id']} domain={topic['domain']}")
-    text = _gateway_call(GEN_MODEL, SYSTEM_PROMPT_JOURNAL_ES, user, caller="cct-journal-es")
+    system = SYSTEM_PROMPT_JOURNAL_ES.format(target_words=topic.get("target_words", 4000))
+    text = _gateway_call(GEN_MODEL, system, user, caller="cct-journal-es")
     text = _strip_multilingual_tail(text)
     logger.info(f"ES generated — {len(text)} chars ({len(text.split())} mots)")
     return text
@@ -139,7 +146,7 @@ def translate(source_text: str, target_lang: str) -> str:
     human = {"fr": "français", "en": "anglais"}[target_lang]
     user = TRANSLATE_PROMPT.format(target_lang_human=human, source_text=source_text)
     logger.info(f"Translating ES → {target_lang.upper()}")
-    text = _gateway_call(GEN_MODEL, f"Tu es traducteur professionnel. Traduis UNIQUEMENT le texte fourni en {human}, sans ajouter de commentaires, sans préfixes, sans explications. Ne répète PAS le texte source.", user, caller=f"cct-journal-{target_lang}")
+    text = _gateway_call(TRANSLATION_MODEL, f"Tu es traducteur professionnel. Traduis UNIQUEMENT le texte fourni en {human}, sans ajouter de commentaires, sans préfixes, sans explications. Ne répète PAS le texte source.", user, caller=f"cct-journal-{target_lang}")
     text = _strip_llm_prefix(text)
     logger.info(f"  → {len(text)} chars ({len(text.split())} mots)")
     return text

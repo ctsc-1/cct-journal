@@ -1,0 +1,24 @@
+2026-06-15 11:08:51,324 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-15 11:08:51,346 INFO cct-journal.pick: Topic choisi (jamais publié): chirimoya-tropical
+2026-06-15 11:08:51,346 INFO cct-journal.main: Sujet du jour : chirimoya-tropical (gastronomie) — La chirimoya : la fruta andina que se enamoró de Almuñécar
+2026-06-15 11:08:51,346 INFO cct-journal.synthesize: Generating ES — topic=chirimoya-tropical domain=gastronomie
+2026-06-15 11:08:57,001 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-15 11:08:57,002 INFO cct-journal.synthesize: ES generated — 4046 chars (712 mots)
+2026-06-15 11:08:57,002 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-15 11:09:00,417 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-15 11:09:00,418 INFO cct-journal.synthesize:   → 4204 chars (710 mots)
+2026-06-15 11:09:00,418 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-15 11:09:03,298 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-15 11:09:03,298 INFO cct-journal.synthesize:   → 4017 chars (707 mots)
+2026-06-15 11:09:03,298 INFO cct-journal.main: Génération OK : ES=4046c, FR=4204c, EN=4017c
+2026-06-15 11:09:03,319 INFO cct-journal.publish: Inserted doc_id=189 (es) — 712 mots, 3 min
+2026-06-15 11:09:03,729 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-15 11:09:03,743 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-15 11:09:03,745 INFO cct-journal.publish: Inserted doc_id=190 (fr) — 710 mots, 3 min
+2026-06-15 11:09:04,192 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-15 11:09:04,203 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-15 11:09:04,204 INFO cct-journal.publish: Inserted doc_id=191 (en) — 707 mots, 3 min
+2026-06-15 11:09:04,627 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-15 11:09:04,639 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-15 11:09:04,640 INFO cct-journal.main: Published : {'es': 189, 'fr': 190, 'en': 191}
+2026-06-15 11:09:04,640 INFO cct-journal.main: ━━━━━━━━━━ Done in 13.3s ━━━━━━━━━━

@@ -1,0 +1,30 @@
+2026-05-27 11:05:50,843 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-27 11:05:50,863 INFO cct-journal.pick: Topic choisi (jamais publié): maestras-artesanas
+2026-05-27 11:05:50,863 INFO cct-journal.main: Sujet du jour : maestras-artesanas (cultura) — Las Maestras Artesanas : guardianas del tiempo en Andalucía
+2026-05-27 11:05:50,863 INFO cct-journal.synthesize: Generating ES — topic=maestras-artesanas domain=cultura
+2026-05-27 11:05:51,123 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 500 Internal Server Error"
+2026-05-27 11:05:51,123 ERROR cct-journal.synthesize: Gateway HTTP 500: {"detail":"404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-3.1-flash-lite-preview is no longer available. Please update your code to use a newer model for the latest featur
+2026-05-28 11:00:14,127 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-28 11:00:14,155 INFO cct-journal.pick: Topic choisi (jamais publié): maestras-artesanas
+2026-05-28 11:00:14,155 INFO cct-journal.main: Sujet du jour : maestras-artesanas (cultura) — Las Maestras Artesanas : guardianas del tiempo en Andalucía
+2026-05-28 11:00:14,156 INFO cct-journal.synthesize: Generating ES — topic=maestras-artesanas domain=cultura
+2026-05-28 11:00:20,706 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-28 11:00:20,707 INFO cct-journal.synthesize: ES generated — 4745 chars (823 mots)
+2026-05-28 11:00:20,707 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-28 11:00:25,051 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-28 11:00:25,051 INFO cct-journal.synthesize:   → 4950 chars (820 mots)
+2026-05-28 11:00:25,052 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-28 11:00:28,474 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-28 11:00:28,474 INFO cct-journal.synthesize:   → 4598 chars (792 mots)
+2026-05-28 11:00:28,474 INFO cct-journal.main: Génération OK : ES=4745c, FR=4950c, EN=4598c
+2026-05-28 11:00:28,498 INFO cct-journal.publish: Inserted doc_id=138 (es) — 823 mots, 4 min
+2026-05-28 11:00:29,651 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-28 11:00:29,673 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-28 11:00:29,674 INFO cct-journal.publish: Inserted doc_id=139 (fr) — 820 mots, 4 min
+2026-05-28 11:00:30,269 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-28 11:00:30,277 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-28 11:00:30,278 INFO cct-journal.publish: Inserted doc_id=140 (en) — 792 mots, 3 min
+2026-05-28 11:00:30,739 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-28 11:00:30,747 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-28 11:00:30,748 INFO cct-journal.main: Published : {'es': 138, 'fr': 139, 'en': 140}
+2026-05-28 11:00:30,748 INFO cct-journal.main: ━━━━━━━━━━ Done in 16.6s ━━━━━━━━━━

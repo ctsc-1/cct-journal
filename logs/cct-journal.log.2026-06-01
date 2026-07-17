@@ -1,0 +1,48 @@
+2026-05-31 11:07:50,849 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-31 11:07:50,874 INFO cct-journal.pick: Topic choisi (jamais publié): fossiles-miocene
+2026-05-31 11:07:50,874 INFO cct-journal.main: Sujet du jour : fossiles-miocene (naturaleza) — Bajo las falas : los arrecifes fósiles del mar que ya no existe
+2026-05-31 11:07:50,874 INFO cct-journal.synthesize: Generating ES — topic=fossiles-miocene domain=naturaleza
+2026-05-31 11:07:55,920 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-31 11:07:55,921 INFO cct-journal.synthesize: ES generated — 3875 chars (670 mots)
+2026-05-31 11:07:55,921 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-31 11:07:58,874 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-31 11:07:58,875 INFO cct-journal.synthesize:   → 4006 chars (665 mots)
+2026-05-31 11:07:58,875 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-31 11:08:01,427 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-31 11:08:01,427 INFO cct-journal.synthesize:   → 3681 chars (648 mots)
+2026-05-31 11:08:01,427 INFO cct-journal.main: Génération OK : ES=3875c, FR=4006c, EN=3681c
+2026-05-31 11:08:01,445 INFO cct-journal.publish: Inserted doc_id=150 (es) — 670 mots, 3 min
+2026-05-31 11:08:01,833 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-31 11:08:01,845 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-31 11:08:01,846 INFO cct-journal.publish: Inserted doc_id=151 (fr) — 665 mots, 3 min
+2026-05-31 11:08:02,254 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-31 11:08:02,264 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-31 11:08:02,265 INFO cct-journal.publish: Inserted doc_id=152 (en) — 648 mots, 3 min
+2026-05-31 11:08:02,675 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-31 11:08:02,684 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-31 11:08:02,686 INFO cct-journal.main: Published : {'es': 150, 'fr': 151, 'en': 152}
+2026-05-31 11:08:02,686 INFO cct-journal.main: ━━━━━━━━━━ Done in 11.8s ━━━━━━━━━━
+2026-06-01 11:01:15,870 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-01 11:01:15,892 INFO cct-journal.pick: Topic choisi (jamais publié): lobos-marinos
+2026-06-01 11:01:15,892 INFO cct-journal.main: Sujet du jour : lobos-marinos (naturaleza) — Los cetáceos de Motril : delfines, ballenas y el mar que aún respira
+2026-06-01 11:01:15,892 INFO cct-journal.synthesize: Generating ES — topic=lobos-marinos domain=naturaleza
+2026-06-01 11:01:19,788 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-01 11:01:19,789 INFO cct-journal.synthesize: ES generated — 3520 chars (607 mots)
+2026-06-01 11:01:19,789 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-01 11:01:22,413 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-01 11:01:22,414 INFO cct-journal.synthesize:   → 3732 chars (620 mots)
+2026-06-01 11:01:22,414 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-01 11:01:24,602 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-01 11:01:24,602 INFO cct-journal.synthesize:   → 3492 chars (609 mots)
+2026-06-01 11:01:24,602 INFO cct-journal.main: Génération OK : ES=3520c, FR=3732c, EN=3492c
+2026-06-01 11:01:24,619 INFO cct-journal.publish: Inserted doc_id=153 (es) — 607 mots, 3 min
+2026-06-01 11:01:24,992 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-01 11:01:25,003 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-01 11:01:25,004 INFO cct-journal.publish: Inserted doc_id=154 (fr) — 620 mots, 3 min
+2026-06-01 11:01:25,468 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-01 11:01:25,476 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-01 11:01:25,477 INFO cct-journal.publish: Inserted doc_id=155 (en) — 609 mots, 3 min
+2026-06-01 11:01:25,874 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-01 11:01:25,883 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-01 11:01:25,884 INFO cct-journal.main: Published : {'es': 153, 'fr': 154, 'en': 155}
+2026-06-01 11:01:25,884 INFO cct-journal.main: ━━━━━━━━━━ Done in 10.0s ━━━━━━━━━━

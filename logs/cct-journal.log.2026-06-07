@@ -1,0 +1,48 @@
+2026-06-06 11:09:58,840 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-06 11:09:58,861 INFO cct-journal.pick: Topic choisi (jamais publié): semana-santa-motril
+2026-06-06 11:09:58,861 INFO cct-journal.main: Sujet du jour : semana-santa-motril (costumbres) — Semana Santa en Motril : la procesión que aún huele a incienso y a mar
+2026-06-06 11:09:58,861 INFO cct-journal.synthesize: Generating ES — topic=semana-santa-motril domain=costumbres
+2026-06-06 11:10:04,858 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-06 11:10:04,859 INFO cct-journal.synthesize: ES generated — 4237 chars (755 mots)
+2026-06-06 11:10:04,859 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-06 11:10:08,844 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-06 11:10:08,845 INFO cct-journal.synthesize:   → 4342 chars (754 mots)
+2026-06-06 11:10:08,845 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-06 11:10:12,164 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-06 11:10:12,164 INFO cct-journal.synthesize:   → 4285 chars (750 mots)
+2026-06-06 11:10:12,164 INFO cct-journal.main: Génération OK : ES=4237c, FR=4342c, EN=4285c
+2026-06-06 11:10:12,193 INFO cct-journal.publish: Inserted doc_id=159 (es) — 755 mots, 3 min
+2026-06-06 11:10:12,631 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-06 11:10:12,643 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-06 11:10:12,644 INFO cct-journal.publish: Inserted doc_id=160 (fr) — 754 mots, 3 min
+2026-06-06 11:10:13,084 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-06 11:10:13,095 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-06 11:10:13,096 INFO cct-journal.publish: Inserted doc_id=161 (en) — 750 mots, 3 min
+2026-06-06 11:10:13,475 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-06 11:10:13,485 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-06 11:10:13,485 INFO cct-journal.main: Published : {'es': 159, 'fr': 160, 'en': 161}
+2026-06-06 11:10:13,485 INFO cct-journal.main: ━━━━━━━━━━ Done in 14.6s ━━━━━━━━━━
+2026-06-07 11:03:50,856 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-07 11:03:50,877 INFO cct-journal.pick: Topic choisi (jamais publié): matanza
+2026-06-07 11:03:50,877 INFO cct-journal.main: Sujet du jour : matanza (costumbres) — La matanza : cuando el invierno era una celebración
+2026-06-07 11:03:50,877 INFO cct-journal.synthesize: Generating ES — topic=matanza domain=costumbres
+2026-06-07 11:03:55,717 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-07 11:03:55,718 INFO cct-journal.synthesize: ES generated — 3643 chars (631 mots)
+2026-06-07 11:03:55,718 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-07 11:03:58,918 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-07 11:03:58,919 INFO cct-journal.synthesize:   → 3914 chars (662 mots)
+2026-06-07 11:03:58,919 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-07 11:04:01,634 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-07 11:04:01,635 INFO cct-journal.synthesize:   → 3620 chars (632 mots)
+2026-06-07 11:04:01,635 INFO cct-journal.main: Génération OK : ES=3643c, FR=3914c, EN=3620c
+2026-06-07 11:04:01,654 INFO cct-journal.publish: Inserted doc_id=162 (es) — 631 mots, 3 min
+2026-06-07 11:04:02,051 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-07 11:04:02,062 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-07 11:04:02,063 INFO cct-journal.publish: Inserted doc_id=163 (fr) — 662 mots, 3 min
+2026-06-07 11:04:02,470 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-07 11:04:02,478 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-07 11:04:02,479 INFO cct-journal.publish: Inserted doc_id=164 (en) — 632 mots, 3 min
+2026-06-07 11:04:02,862 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-07 11:04:02,871 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-07 11:04:02,871 INFO cct-journal.main: Published : {'es': 162, 'fr': 163, 'en': 164}
+2026-06-07 11:04:02,872 INFO cct-journal.main: ━━━━━━━━━━ Done in 12.0s ━━━━━━━━━━

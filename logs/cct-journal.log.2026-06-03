@@ -1,0 +1,12 @@
+2026-06-02 11:08:51,309 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-02 11:08:51,330 INFO cct-journal.pick: Topic choisi (jamais publié): semana-santa-motril
+2026-06-02 11:08:51,330 INFO cct-journal.main: Sujet du jour : semana-santa-motril (costumbres) — Semana Santa en Motril : la procesión que aún huele a incienso y a mar
+2026-06-02 11:08:51,330 INFO cct-journal.synthesize: Generating ES — topic=semana-santa-motril domain=costumbres
+2026-06-02 11:08:51,495 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 500 Internal Server Error"
+2026-06-02 11:08:51,495 ERROR cct-journal.synthesize: Gateway HTTP 500: {"detail":"403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Lightning dunning decision is deny for project: projects/170343000862', 'status': 'PERMISSION_DENIED'}}"}
+2026-06-03 11:04:50,857 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-03 11:04:50,886 INFO cct-journal.pick: Topic choisi (jamais publié): semana-santa-motril
+2026-06-03 11:04:50,886 INFO cct-journal.main: Sujet du jour : semana-santa-motril (costumbres) — Semana Santa en Motril : la procesión que aún huele a incienso y a mar
+2026-06-03 11:04:50,886 INFO cct-journal.synthesize: Generating ES — topic=semana-santa-motril domain=costumbres
+2026-06-03 11:04:51,060 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 500 Internal Server Error"
+2026-06-03 11:04:51,060 ERROR cct-journal.synthesize: Gateway HTTP 500: {"detail":"403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Lightning dunning decision is deny for project: projects/170343000862', 'status': 'PERMISSION_DENIED'}}"}

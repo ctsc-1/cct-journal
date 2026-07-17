@@ -1,0 +1,12 @@
+2026-05-08 11:08:55,859 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-08 11:08:55,880 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-08 11:08:55,880 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-08 11:08:55,880 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-08 11:09:03,089 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-08 11:09:03,090 INFO cct-journal.synthesize: ES generated — 5139 chars (935 mots)
+2026-05-08 11:09:03,090 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-08 11:09:08,042 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-08 11:09:08,043 INFO cct-journal.synthesize:   → 5388 chars (927 mots)
+2026-05-08 11:09:08,043 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-08 11:09:08,130 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 500 Internal Server Error"
+2026-05-08 11:09:08,131 ERROR cct-journal.synthesize: Gateway HTTP 500: {"detail":"503 UNAVAILABLE. {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}}"}

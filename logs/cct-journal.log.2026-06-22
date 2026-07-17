@@ -1,0 +1,75 @@
+2026-06-22 06:35:04,918 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-22 06:35:05,174 INFO cct-journal.images:    Optimisé: 1726KB → 94KB WebP (5%)
+2026-06-22 06:35:05,265 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-22-section-2.webp (Position: Bas-Droite)
+2026-06-22 06:35:05,267 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-22-section-2.webp
+2026-06-22 06:35:05,267 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-22-section-2.webp (100KB)
+2026-06-22 06:35:11,138 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-22 06:35:11,420 INFO cct-journal.images:    Optimisé: 2105KB → 279KB WebP (13%)
+2026-06-22 06:35:11,552 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-22-section-3.webp (Position: Bas-Droite)
+2026-06-22 06:35:11,555 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-22-section-3.webp
+2026-06-22 06:35:11,555 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-22-section-3.webp (299KB)
+2026-06-22 06:35:18,993 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-22 06:35:19,256 INFO cct-journal.images:    Optimisé: 1775KB → 121KB WebP (7%)
+2026-06-22 06:35:19,349 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-22-section-4.webp (Position: Bas-Droite)
+2026-06-22 06:35:19,351 INFO cct-journal.images: ✨ Badge IA: enquetes-dossiers-2026-06-22-section-4.webp
+2026-06-22 06:35:19,351 INFO cct-journal.images:    🖼️ Section: enquetes-dossiers-2026-06-22-section-4.webp (122KB)
+2026-06-22 06:35:19,351 INFO cct-journal.images:    📄 Marqueur [[IMG:hero]] → ![]() hero
+2026-06-22 06:35:19,351 INFO cct-journal.images:    📄 Marqueur [[IMG:section-1]] → ![]() section
+2026-06-22 06:35:19,351 INFO cct-journal.images:    📄 Marqueur [[IMG:section-2]] → ![]() section
+2026-06-22 06:35:19,351 INFO cct-journal.images:    📄 Marqueur [[IMG:section-3]] → ![]() section
+2026-06-22 06:35:19,351 INFO cct-journal.images:    📄 Marqueur [[IMG:section-4]] → ![]() section
+2026-06-22 06:35:19,351 INFO cct-journal.images:    Hero: ✅ | Sections: 4 | Texte: ✅
+2026-06-22 06:35:19,351 INFO cct-journal.main: 💾 Phase 5: Publication DB...
+2026-06-22 06:35:19,363 INFO cct-journal.publish: ✅ Article publié: enquetes-dossiers-2026-06-22
+2026-06-22 06:35:19,364 INFO cct-journal.publish:    ES=4905c (729 mots) | FR=5060c (737 mots) | EN=4782c (709 mots)
+2026-06-22 06:35:19,364 INFO cct-journal.publish:    Catégorie: investigacion → c3d1056a-ccca-45e6-ac0a-42f2e30c8c2b
+2026-06-22 06:35:19,364 INFO cct-journal.main: Published : {'es': 1, 'fr': 2, 'en': 3}
+2026-06-22 06:35:19,462 INFO service.image_factory: ✨ Filigrane 'IA' ajouté à /srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-22-hero.webp (Position: Bas-Droite)
+2026-06-22 06:35:19,464 INFO cct-journal.publish: ✨ AI badge applied: enquetes-dossiers-2026-06-22-hero.webp
+2026-06-22 06:35:19,464 INFO cct-journal.main: ✨ Badge IA appliqué sur l'image hero
+2026-06-22 06:35:19,464 INFO cct-journal.main: 🎙️ Phase 5c: Podcast audio...
+2026-06-22 06:35:19,465 INFO cct-journal.podcast: 🎙️ Génération podcast pour 'La regeneración del litoral de la Costa Tropical'
+2026-06-22 06:35:31,470 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-22 06:35:31,471 INFO cct-journal.podcast: 📝 Script podcast: 2327 chars (406 mots)
+2026-06-22 06:35:31,471 INFO cct-journal.podcast: 🔊 TTS...
+2026-06-22 06:36:39,952 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=AIzaSyBqhD1XwkvGvhxvgxeQQJzTcjbvaY8MTwk "HTTP/1.1 200 OK"
+2026-06-22 06:36:43,397 INFO cct-journal.podcast: ✅ Podcast: enquetes-dossiers-2026-06-22-es.mp3 (1266KB, ~155s)
+2026-06-22 06:36:43,407 INFO cct-journal.podcast: 💾 audio_url saved: /api/static/audio/articles/enquetes-dossiers-2026-06-22-es.mp3
+2026-06-22 06:36:43,407 INFO cct-journal.main:    ✅ Podcast: /api/static/audio/articles/enquetes-dossiers-2026-06-22-es.mp3 (1266KB, ~155s)
+2026-06-22 06:36:43,407 INFO cct-journal.main: 📊 Phase 6: Contrôle Qualité...
+2026-06-22 06:36:43,488 INFO httpx: HTTP Request: GET https://clubcostatropical.es/api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/enquetes-dossiers-2026-06-22-hero.webp "HTTP/1.1 200 OK"
+2026-06-22 06:36:43,568 INFO httpx: HTTP Request: GET https://clubcostatropical.es/api/static/audio/articles/enquetes-dossiers-2026-06-22-es.mp3 "HTTP/1.1 200 OK"
+2026-06-22 06:36:43,808 INFO httpx: HTTP Request: GET https://clubcostatropical.es/api/blog/ea0e1f78-2556-45da-b0cb-c9b8edd01887 "HTTP/1.1 200 OK"
+2026-06-22 06:36:43,809 INFO cct-journal.qc: 
+2026-06-22 06:36:43,809 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-22 06:36:43,809 INFO cct-journal.qc: 📊 CONTRÔLE QUALITÉ — Journal CCT
+2026-06-22 06:36:43,809 INFO cct-journal.qc:     Article: enquetes-dossiers-2026-06-22
+2026-06-22 06:36:43,809 INFO cct-journal.qc:     Date: 2026-06-22 04:36
+2026-06-22 06:36:43,809 INFO cct-journal.qc:     Verdict: ✅ PASS
+2026-06-22 06:36:43,809 INFO cct-journal.qc:     Score: 11/11
+2026-06-22 06:36:43,809 INFO cct-journal.qc:     Tout est vert
+2026-06-22 06:36:43,809 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] SLUG: Slug OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] SUBTITLE: Subtitle valide (pas d'image markdown)
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] TRILING-TITLE: Titres trilingues OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → FR='La métamorphose du littoral gr' ES='La metamorfosis del litoral gr' EN='The metamorphosis of the Grana'
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] TITLE-LEN: Titres taille OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] CONTENT: Contenu trilingue OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → FR=5060c ES=4905c EN=4782c
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] HERO: Image hero OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → 87KB — HTTP 200
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] INLINE-IMG: Images inline OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → fr(5), es(5), en(5)
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] GALLERY: Galerie OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → 4 image(s)
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] AUDIO: Podcast OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → 1266KB — HTTP 200
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] API: Article accessible via API
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → UUID ea0e1f78-255... → HTTP 200
+2026-06-22 06:36:43,809 INFO cct-journal.qc:   ✅ [🔴P1] METADATA: Métadonnées OK
+2026-06-22 06:36:43,809 INFO cct-journal.qc:      → WC=729
+2026-06-22 06:36:43,809 INFO cct-journal.qc: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-22 06:36:43,809 INFO cct-journal.qc: ✅ TOUT EST VERT
+2026-06-22 06:36:43,809 INFO cct-journal.main:    ✅ QC PASS
+2026-06-22 06:36:43,809 INFO cct-journal.main: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-06-22 06:36:43,809 INFO cct-journal.main: ✅ Journal terminé en 183.2s

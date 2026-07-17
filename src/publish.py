@@ -85,6 +85,25 @@ def _pg() -> psycopg2.connection:
     return psycopg2.connect(db_url, connect_timeout=10)
 
 
+def _strip_markdown(text: str) -> str:
+    """Nettoie les résidus markdown d'un texte de titre/excerpt.
+    Les LLM (DeepSeek) injectent parfois **gras**, ## titres, etc."""
+    if not text:
+        return text
+    # Enlever les marqueurs de heading
+    text = re.sub(r"^#{1,6}\s+", "", text)
+    # Enlever les **gras** et __gras__
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    text = re.sub(r"__(.+?)__", r"\1", text)
+    # Enlever les *italique* simples (mais pas les puces)
+    text = re.sub(r"(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)", r"\1", text)
+    # Enlever les markdown links [texte](url) -> texte
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    # Nettoyer les doubles espaces
+    text = re.sub(r"  +", " ", text)
+    return text.strip()
+
+
 def _extract_title(markdown: str) -> tuple[str, str]:
     lines = markdown.splitlines()
     title = ""
@@ -92,7 +111,7 @@ def _extract_title(markdown: str) -> tuple[str, str]:
     for i, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith("# ") and not title:
-            title = stripped[2:].strip()
+            title = _strip_markdown(stripped[2:].strip())
             body_start = i + 1
             break
     body = "\n".join(lines[body_start:]).strip()
@@ -155,8 +174,8 @@ def _extract_excerpt(text: str) -> str:
             continue
         if stripped.startswith("# ") or stripped.startswith("## "):
             continue
-        # Premier paragraphe réel
-        return _word_aware_truncate(stripped, 350)
+        # Premier paragraphe réel — nettoyer le markdown
+        return _word_aware_truncate(_strip_markdown(stripped), 350)
     return ""
 
 

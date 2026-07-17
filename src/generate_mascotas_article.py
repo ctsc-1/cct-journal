@@ -23,7 +23,7 @@ TRANS_MODEL = "gemini-3.1-flash-lite-preview"
 GATEWAY_KEY = os.environ.get("GATEWAY_KEY")
 if not GATEWAY_KEY:
     try:
-        GATEWAY_KEY = open("/etc/gateway-secrets/gemini-paid.key").read().strip()
+        GATEWAY_KEY = open("/etc/gateway-secrets/gemini-gateway.key").read().strip()
     except Exception:
         pass
 

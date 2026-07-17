@@ -257,5 +257,41 @@ topics:
       - Déclin : années 1950, arrivée des raisins de table du Chili.
     tags: [uva, ohanes, exportacion, xix, almeria]
 
-# Note : 15 sujets listés — rotation sur 45 jours, chaque sujet revient ~1 fois par mois.
+  # ═══════════════════════════════════════ CULTURE & TRADITIONS ═══════════════════════════════════════
+
+  - id: fêtes-molvizar
+    domain: cultura
+    title: "Las fiestas patronales de Molvízar: tambores, colores y alegría en un joya medieval"
+    angle: >
+      Immersion dans les fêtes patronales de Molvízar. Décrire l'ambiance
+      des ruelles médiévales, les tambours, les processions, la ferveur
+      populaire. Comment ce village de 3000 habitants perpétue ses traditions
+      entre mer et montagne dans la vallée du Río Verde.
+    context: |
+      - Molvízar: village médiéval du Valle de Río Verde, ~3000 habitants.
+      - Fêtes patronales: 4 jours, procession, tambours (coro de tambores).
+      - Architecture: ruelles étroites, église Santa Ana (XVIe).
+      - Gastronomie locale: migas, platos alpujarreños.
+      - Produits agricoles: chirimoyas, avocats (subtropical).
+      - Proximité: Salobreña (7 km), plages à 10 min.
+    tags: [molvizar, fiestas, tradiciones, tambores, valle-rio-verde]
+
+  - id: fiestas-torrenueva
+    domain: cultura
+    title: "Torrenueva Costa honra a la Virgen del Carmen: fe, mar y tradición pesquera"
+    angle: >
+      Reportage sur les fêtes marines de Torrenueva Costa en l'honneur de
+      la Virgen del Carmen. La procession maritime, les bateaux décorés,
+      la dévotion des pêcheurs, le lien entre la mer et la foi qui unit
+      les générations dans cet ancien village de pêcheurs.
+    context: |
+      - Torrenueva Costa: ancien village de pêcheurs, quartier de Motril.
+      - Fête de la Virgen del Carmen: 16 juillet, sainte patronne des marins.
+      - Procession: statue portée sur un bateau, escortée par la flotte locale.
+      - Traditions: chants marins (salves), décoration des bateaux.
+      - Plages: Torrenueva, La Joya, Carchuna.
+      - Économie: pêche artisanale (sardines, anchois).
+    tags: [torrenueva, virgen-del-carmen, pescadores, procesion-maritima, motril]
+
+# Note : 17 sujets listés — rotation sur 45 jours, chaque sujet revient ~1 fois par mois.
 # Marc peut ajouter des sujets à volonté (géographie locale, personnages, événements).

@@ -1,0 +1,48 @@
+2026-06-11 11:07:38,661 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-11 11:07:38,682 INFO cct-journal.pick: Topic choisi (jamais publié): acueductos-nasrides
+2026-06-11 11:07:38,682 INFO cct-journal.main: Sujet du jour : acueductos-nasrides (patrimonio) — Los acueductos invisibles : mil años de agua nazarí bajo nuestros pies
+2026-06-11 11:07:38,682 INFO cct-journal.synthesize: Generating ES — topic=acueductos-nasrides domain=patrimonio
+2026-06-11 11:07:45,925 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-11 11:07:45,926 INFO cct-journal.synthesize: ES generated — 5591 chars (929 mots)
+2026-06-11 11:07:45,926 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-11 11:07:50,645 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-11 11:07:50,646 INFO cct-journal.synthesize:   → 5940 chars (949 mots)
+2026-06-11 11:07:50,646 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-11 11:07:54,568 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-11 11:07:54,568 INFO cct-journal.synthesize:   → 5529 chars (927 mots)
+2026-06-11 11:07:54,568 INFO cct-journal.main: Génération OK : ES=5591c, FR=5940c, EN=5529c
+2026-06-11 11:07:54,586 INFO cct-journal.publish: Inserted doc_id=174 (es) — 929 mots, 4 min
+2026-06-11 11:07:55,322 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-11 11:07:55,335 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-11 11:07:55,337 INFO cct-journal.publish: Inserted doc_id=175 (fr) — 949 mots, 4 min
+2026-06-11 11:07:56,081 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-11 11:07:56,091 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-11 11:07:56,093 INFO cct-journal.publish: Inserted doc_id=176 (en) — 927 mots, 4 min
+2026-06-11 11:07:57,704 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-11 11:07:57,712 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-11 11:07:57,714 INFO cct-journal.main: Published : {'es': 174, 'fr': 175, 'en': 176}
+2026-06-11 11:07:57,714 INFO cct-journal.main: ━━━━━━━━━━ Done in 19.1s ━━━━━━━━━━
+2026-06-12 11:06:18,876 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-06-12 11:06:18,911 INFO cct-journal.pick: Topic choisi (jamais publié): migas-alpujarrenas
+2026-06-12 11:06:18,912 INFO cct-journal.main: Sujet du jour : migas-alpujarrenas (gastronomie) — Las migas alpujarreñas : el pan del pastor, la memoria del frío
+2026-06-12 11:06:18,912 INFO cct-journal.synthesize: Generating ES — topic=migas-alpujarrenas domain=gastronomie
+2026-06-12 11:06:23,663 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-12 11:06:23,663 INFO cct-journal.synthesize: ES generated — 3842 chars (702 mots)
+2026-06-12 11:06:23,663 INFO cct-journal.synthesize: Translating ES → FR
+2026-06-12 11:06:27,069 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-12 11:06:27,069 INFO cct-journal.synthesize:   → 3979 chars (703 mots)
+2026-06-12 11:06:27,069 INFO cct-journal.synthesize: Translating ES → EN
+2026-06-12 11:06:29,722 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-06-12 11:06:29,722 INFO cct-journal.synthesize:   → 3798 chars (682 mots)
+2026-06-12 11:06:29,722 INFO cct-journal.main: Génération OK : ES=3842c, FR=3979c, EN=3798c
+2026-06-12 11:06:29,751 INFO cct-journal.publish: Inserted doc_id=177 (es) — 702 mots, 3 min
+2026-06-12 11:06:30,146 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-12 11:06:30,157 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-12 11:06:30,159 INFO cct-journal.publish: Inserted doc_id=178 (fr) — 703 mots, 3 min
+2026-06-12 11:06:30,561 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-12 11:06:30,572 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-12 11:06:30,573 INFO cct-journal.publish: Inserted doc_id=179 (en) — 682 mots, 3 min
+2026-06-12 11:06:30,971 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-06-12 11:06:30,981 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-06-12 11:06:30,982 INFO cct-journal.main: Published : {'es': 177, 'fr': 178, 'en': 179}
+2026-06-12 11:06:30,982 INFO cct-journal.main: ━━━━━━━━━━ Done in 12.1s ━━━━━━━━━━

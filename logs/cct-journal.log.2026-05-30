@@ -1,0 +1,48 @@
+2026-05-29 11:04:50,840 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-29 11:04:50,862 INFO cct-journal.pick: Topic choisi (jamais publié): cronicas-charly
+2026-05-29 11:04:50,862 INFO cct-journal.main: Sujet du jour : cronicas-charly (cultura) — Charly y las tertulias del sábado : el pulso humano del Club
+2026-05-29 11:04:50,862 INFO cct-journal.synthesize: Generating ES — topic=cronicas-charly domain=cultura
+2026-05-29 11:04:56,692 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-29 11:04:56,693 INFO cct-journal.synthesize: ES generated — 4300 chars (737 mots)
+2026-05-29 11:04:56,693 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-29 11:05:00,222 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-29 11:05:00,222 INFO cct-journal.synthesize:   → 4474 chars (740 mots)
+2026-05-29 11:05:00,222 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-29 11:05:03,336 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-29 11:05:03,336 INFO cct-journal.synthesize:   → 4125 chars (713 mots)
+2026-05-29 11:05:03,337 INFO cct-journal.main: Génération OK : ES=4300c, FR=4474c, EN=4125c
+2026-05-29 11:05:03,355 INFO cct-journal.publish: Inserted doc_id=141 (es) — 737 mots, 3 min
+2026-05-29 11:05:04,017 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-29 11:05:04,029 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-29 11:05:04,030 INFO cct-journal.publish: Inserted doc_id=142 (fr) — 740 mots, 3 min
+2026-05-29 11:05:04,550 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-29 11:05:04,560 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-29 11:05:04,561 INFO cct-journal.publish: Inserted doc_id=143 (en) — 713 mots, 3 min
+2026-05-29 11:05:04,935 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-29 11:05:04,944 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-29 11:05:04,945 INFO cct-journal.main: Published : {'es': 141, 'fr': 142, 'en': 143}
+2026-05-29 11:05:04,946 INFO cct-journal.main: ━━━━━━━━━━ Done in 14.1s ━━━━━━━━━━
+2026-05-30 11:00:49,370 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-30 11:00:49,391 INFO cct-journal.pick: Topic choisi (jamais publié): mulhacen
+2026-05-30 11:00:49,391 INFO cct-journal.main: Sujet du jour : mulhacen (naturaleza) — El Mulhacén : el techo de la península y el corazón espiritual de Andalucía
+2026-05-30 11:00:49,391 INFO cct-journal.synthesize: Generating ES — topic=mulhacen domain=naturaleza
+2026-05-30 11:00:54,683 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-30 11:00:54,684 INFO cct-journal.synthesize: ES generated — 4008 chars (697 mots)
+2026-05-30 11:00:54,684 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-30 11:00:58,305 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-30 11:00:58,306 INFO cct-journal.synthesize:   → 4099 chars (691 mots)
+2026-05-30 11:00:58,306 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-30 11:01:01,401 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-30 11:01:01,401 INFO cct-journal.synthesize:   → 3994 chars (689 mots)
+2026-05-30 11:01:01,401 INFO cct-journal.main: Génération OK : ES=4008c, FR=4099c, EN=3994c
+2026-05-30 11:01:01,421 INFO cct-journal.publish: Inserted doc_id=147 (es) — 697 mots, 3 min
+2026-05-30 11:01:01,833 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-30 11:01:01,845 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-30 11:01:01,846 INFO cct-journal.publish: Inserted doc_id=148 (fr) — 691 mots, 3 min
+2026-05-30 11:01:02,265 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-30 11:01:02,275 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-30 11:01:02,276 INFO cct-journal.publish: Inserted doc_id=149 (en) — 689 mots, 3 min
+2026-05-30 11:01:02,750 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/embed "HTTP/1.1 200 OK"
+2026-05-30 11:01:02,759 INFO cct-journal.publish:   Embedding 3072 dims inséré
+2026-05-30 11:01:02,760 INFO cct-journal.main: Published : {'es': 147, 'fr': 148, 'en': 149}
+2026-05-30 11:01:02,760 INFO cct-journal.main: ━━━━━━━━━━ Done in 13.4s ━━━━━━━━━━

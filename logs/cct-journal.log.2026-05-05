@@ -1,0 +1,19 @@
+2026-05-04 11:09:25,106 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-04 11:09:25,125 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-04 11:09:25,126 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-04 11:09:25,126 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-04 11:09:30,111 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 500 Internal Server Error"
+2026-05-04 11:09:30,112 ERROR cct-journal.synthesize: Gateway HTTP 500: Internal Server Error
+2026-05-05 11:01:08,379 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-05 11:01:08,401 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-05 11:01:08,401 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-05 11:01:08,401 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-05 11:01:16,576 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-05 11:01:16,577 INFO cct-journal.synthesize: ES generated — 5436 chars (976 mots)
+2026-05-05 11:01:16,577 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-05 11:01:22,255 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-05 11:01:22,256 INFO cct-journal.synthesize:   → 5601 chars (962 mots)
+2026-05-05 11:01:22,256 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-05 11:01:26,062 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-05 11:01:26,062 INFO cct-journal.synthesize:   → 5450 chars (967 mots)
+2026-05-05 11:01:26,062 INFO cct-journal.main: Génération OK : ES=5436c, FR=5601c, EN=5450c

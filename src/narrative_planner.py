@@ -21,8 +21,9 @@ logger = logging.getLogger("cct-journal.narrative")
 
 # ─── Gateway ─────────────────────────────────────────────────────────────────
 GATEWAY_URL = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-NARRATIVE_MODEL = "gemini-3.1-pro-preview"  # 50K RPD, gratuit — intelligence max
-FALLBACK_MODEL = "gemini-3-flash-preview"    # Fallback si pro surchargé
+from pipeline.model_env import get_model
+NARRATIVE_MODEL = get_model("NARRATIVE", "gemini-3.5-flash")
+FALLBACK_MODEL = get_model("SYNTHESIS", "gemini-3.1-flash-lite-preview")
 
 # ─── Prompt système du directeur de la photo ────────────────────────────────
 
@@ -134,10 +135,12 @@ def plan_images(article_text: str, title: str) -> Tuple[str, List[Dict], str]:
             data = json.loads(json_match.group(0))
         else:
             logger.warning("⚠️ Pas de JSON dans la réponse LLM, planification générique")
-            data = {"sections": [{"section_title": s, "prompt": f"Fotografía documental sobre {s} en la Costa Tropical."} for s in sections]}
+            hero_fallback = f"Fotografía de prensa para artículo '{title[:80]}' en la Costa Tropical. Luz mediterránea natural, estilo documental National Geographic."
+            data = {"hero": hero_fallback, "section_prompts": [f"Fotografía documental sobre {s} en la Costa Tropical." for s in sections]}
     except json.JSONDecodeError:
         logger.warning("⚠️ JSON invalide, planification générique")
-        data = {"sections": [{"section_title": s, "prompt": f"Fotografía documental sobre {s} en la Costa Tropical."} for s in sections]}
+        hero_fallback = f"Fotografía de prensa para artículo '{title[:80]}' en la Costa Tropical. Luz mediterránea natural, estilo documental National Geographic."
+        data = {"hero": hero_fallback, "section_prompts": [f"Fotografía documental sobre {s} en la Costa Tropical." for s in sections]}
 
     # Construire le plan à partir des TITRES RÉELS du texte + prompts du LLM par position
     hero_prompt = data.get("hero", "")

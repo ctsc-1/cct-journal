@@ -12,10 +12,12 @@ from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import httpx
+import sys; sys.path.insert(0, "/srv/rag-engine")
+from pipeline.model_env import get_model
 
 logger = logging.getLogger("cct-journal.rotor")
 
-# ─── 12 Catégories du Journal CCT ───────────────────────────────────────────
+# ─── 11 Catégories du Journal CCT ───────────────────────────────────────────
 
 CATEGORIES = [
     {
@@ -107,15 +109,6 @@ CATEGORIES = [
         "description": "Actualité du Club Costa Tropical : nouveaux membres, événements, fonctionnalités, vie communautaire.",
         "angle": "Newsletter engageante : ce qui s'est passé cette semaine, à venir, coups de cœur.",
         "tags": ["club", "semanal", "miembros", "comunidad"],
-    },
-    {
-        "id": "cronicas-charly",
-        "category_id": "f6a1056a-ffff-45e6-ac0a-42f2e30c8c2b",
-        "name_es": "Las Crónicas de Charly",
-        "domain": "cultura",
-        "description": "Chroniques historiques et contes andalous narrés par Charly, la mascotte du Club.",
-        "angle": "Récit sensoriel et romancé, mélange d'histoire et de fiction poétique.",
-        "tags": ["cronicas", "charly", "historia", "narracion"],
     },
     {
         "id": "revista-prensa",
@@ -281,7 +274,7 @@ def generate_topic(category: dict, date_str: str | None = None) -> dict:
         r = httpx.post(
             f"{GATEWAY_URL}/v1/generate",
             json={
-                "model": "gemini-3-flash-preview",
+                "model": get_model("ROTOR", "gemini-2.5-flash-lite"),
                 "contents": prompt,
                 "caller": "cct-journal-rotor",
             },

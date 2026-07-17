@@ -1,0 +1,22 @@
+2026-05-02 11:09:47,462 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-02 11:09:47,463 INFO cct-journal.synthesize: ES generated — 4897 chars (862 mots)
+2026-05-02 11:09:47,463 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-02 11:09:51,424 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-02 11:09:51,424 INFO cct-journal.synthesize:   → 5136 chars (862 mots)
+2026-05-02 11:09:51,424 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-02 11:09:54,680 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-02 11:09:54,680 INFO cct-journal.synthesize:   → 5019 chars (873 mots)
+2026-05-02 11:09:54,680 INFO cct-journal.main: Génération OK : ES=4897c, FR=5136c, EN=5019c
+2026-05-03 11:03:50,876 INFO cct-journal.main: ━━━━━━━━━━ Journal CCT — start ━━━━━━━━━━
+2026-05-03 11:03:50,908 INFO cct-journal.pick: Topic choisi (jamais publié): flamenco-alpujarra
+2026-05-03 11:03:50,909 INFO cct-journal.main: Sujet du jour : flamenco-alpujarra (cultura) — El flamenco que baja de la Alpujarra : los cantes de la montaña
+2026-05-03 11:03:50,909 INFO cct-journal.synthesize: Generating ES — topic=flamenco-alpujarra domain=cultura
+2026-05-03 11:03:57,778 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-03 11:03:57,779 INFO cct-journal.synthesize: ES generated — 5776 chars (1020 mots)
+2026-05-03 11:03:57,779 INFO cct-journal.synthesize: Translating ES → FR
+2026-05-03 11:04:02,269 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-03 11:04:02,270 INFO cct-journal.synthesize:   → 5997 chars (1009 mots)
+2026-05-03 11:04:02,270 INFO cct-journal.synthesize: Translating ES → EN
+2026-05-03 11:04:06,230 INFO httpx: HTTP Request: POST http://127.0.0.1:4000/v1/generate "HTTP/1.1 200 OK"
+2026-05-03 11:04:06,231 INFO cct-journal.synthesize:   → 5849 chars (1018 mots)
+2026-05-03 11:04:06,231 INFO cct-journal.main: Génération OK : ES=5776c, FR=5997c, EN=5849c
