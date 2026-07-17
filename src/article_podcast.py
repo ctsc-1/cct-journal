@@ -183,35 +183,18 @@ def _generate_script(text: str, title: str, lang: str = "es") -> Optional[str]:
 
 
 def _tts(text: str, voice: str = "Leda") -> Optional[bytes]:
-    """Appelle Gemini TTS directement (ne dépend pas de gemini_direct qui a besoin de la clé gateway)."""
-    import base64
-    api_key_path = "/etc/cct-journal/gemini.key"
-    tts_model = "gemini-2.5-flash-preview-tts"
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{tts_model}:generateContent"
+    """Appelle le module TTS unifié (MCP quotas + fallback automatique)."""
+    import asyncio
+    from pipeline.tts_unified import tts as unified_tts
     try:
-        api_key = Path(api_key_path).read_text().strip()
-        body = {
-            "contents": [{"parts": [{"text": text}]}],
-            "generationConfig": {
-                "responseModalities": ["AUDIO"],
-                "speechConfig": {
-                    "voiceConfig": {
-                        "prebuiltVoiceConfig": {"voiceName": voice}
-                    }
-                }
-            }
-        }
-        r = httpx.post(f"{url}?key={api_key}", json=body, timeout=120)
-        r.raise_for_status()
-        data = r.json()
-        for candidate in data.get("candidates", []):
-            for part in candidate.get("content", {}).get("parts", []):
-                if "inlineData" in part:
-                    return base64.b64decode(part["inlineData"]["data"])
-        logger.warning("⚠️ No audio data in Gemini response")
-        return None
+        return asyncio.get_event_loop().run_until_complete(
+            unified_tts(text, voice, api_key_path="/etc/cct-journal/gemini.key")
+        )
+    except RuntimeError:
+        # Pas d'event loop → en créer une
+        return asyncio.run(unified_tts(text, voice, api_key_path="/etc/cct-journal/gemini.key"))
     except Exception as e:
-        logger.error(f"❌ TTS error: {e}")
+        logger.error(f"❌ TTS unified error: {e}")
         return None
 
 
