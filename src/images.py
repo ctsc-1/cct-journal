@@ -1,13 +1,9 @@
+#!/usr/bin/env python3
 """
-images.py — Studio photo du Journal CCT.
-
-Moteur unique : gemini_image.py (Gateway → Imagen 4.0 → FLUX fallback).
-Badge ✨ IA + optimisation WebP automatiques.
-
-Deux modes :
-1. Planifié : reçoit un plan narratif (prompts spécifiques)
-2. Manuel : génère des prompts génériques (rattrapage)
+images.py — Moteur d'images du Journal CCT.
+Délègue tout à pipeline.mcp_image (FAL.ai → Replicate fallback).
 """
+
 from __future__ import annotations
 import asyncio
 import json
@@ -17,34 +13,40 @@ import re
 import sys
 from typing import Dict, List, Optional, Tuple
 
+sys.path.insert(0, "/srv/rag-engine")
+from pipeline.mcp_image import generate_hero, generate_square, generate_and_save  # noqa: E402
+
 logger = logging.getLogger("cct-journal.images")
 
-# ─── Moteur unique ───────────────────────────────────────────────
-sys.path.insert(0, "/srv/rag-engine")
-from pipeline.gemini_image import generate_and_save  # noqa: E402
-
-# ─── Chemins ─────────────────────────────────────────────────────────
 JOURNAL_IMAGE_DIR = "/srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL"
 os.makedirs(JOURNAL_IMAGE_DIR, exist_ok=True)
 
-HERO_TIMEOUT = 90
-SECTION_TIMEOUT = 60
+HERO_TIMEOUT = 120
+SECTION_TIMEOUT = 120
 MIN_PROMPT_LENGTH = 20
 
 
-async def _generate_and_save_one(prompt: str, output_base: str, ptype: str,
-                                  timeout: int = 60) -> Optional[str]:
-    """Génère une image via le moteur unique et retourne le chemin WebP."""
-    max_width = 1920 if ptype == "hero" else 1200
-    width = 1200 if ptype == "hero" else 1024
-    height = 630 if ptype == "hero" else 1024
+def _save_webp(img_bytes: bytes, output_base: str) -> None:
+    path = output_base + ".webp"
+    with open(path, "wb") as f:
+        f.write(img_bytes)
 
-    url = await generate_and_save(
-        prompt, output_base,
-        max_width=max_width, width=width, height=height, timeout=timeout,
-        silo="journal"
-    )
-    return url
+
+async def _generate_and_save_one(prompt: str, output_base: str, ptype: str,
+                                  timeout: int = 120) -> Optional[str]:
+    """Génère via mcp_image (FAL→Replicate) et sauvegarde en WebP."""
+    slug_part = os.path.basename(output_base)
+
+    gen = generate_hero if ptype == "hero" else generate_square
+    img_bytes = await gen(prompt=prompt, timeout=timeout)
+
+    if img_bytes and len(img_bytes) > 100:
+        _save_webp(img_bytes, output_base)
+        logger.info(f"   ✅ {ptype}: {len(img_bytes)//1024}KB")
+        return output_base + ".webp"
+
+    logger.error(f"   ❌ Échec pour {ptype}")
+    return None
 
 
 async def generate_article_images(
@@ -52,11 +54,7 @@ async def generate_article_images(
     plan: List[Dict],
     slug: str,
 ) -> Tuple[str, str, str]:
-    """Génère hero + section images depuis un plan narratif.
-
-    Returns:
-        (hero_url, gallery_json, text_with_images)
-    """
+    """Génère hero + section images depuis un plan narratif."""
     logger.info(f"📸 Studio photo: {len(plan)} image(s) planifiée(s)")
     hero_url = ""
     section_images = []
@@ -94,7 +92,6 @@ async def generate_article_images(
             })
             logger.info(f"   🖼️ Section: {os.path.basename(webp_path)} ({kb}KB)")
 
-    # Remplacer les marqueurs par ![]()
     text_with_images = text_with_markers
     marker_idx = 0
 
@@ -121,76 +118,74 @@ async def generate_article_images(
     return hero_url, gallery_json, text_with_images
 
 
-# ═══════════════════════════════════════════════════════════════
-#  MODE MANUEL (rattrapage d'articles sans plan narratif)
-# ═══════════════════════════════════════════════════════════════
-
-def _generate_generic_prompt(title: str, section: str = "", ptype: str = "section") -> str:
-    """Prompt générique quand le plan narratif n'est pas disponible."""
+def _generate_generic_prompt(title: str, section: str = "", section_content: str = "", ptype: str = "section") -> str:
     if ptype == "hero":
         return (
             f"Fotografía de prensa para artículo '{title[:80]}' en la Costa Tropical. "
             f"Escena realista y luminosa, estilo documental National Geographic. "
             f"Luz mediterránea natural, composición profesional. Sin texto."
         )
+    content_hint = f" La sección habla de: {section_content[:200]}." if section_content else ""
     return (
-        f"Fotografía documental para sección '{section[:60]}' del artículo '{title[:60]}' "
-        f"en la Costa Tropical. Estilo National Geographic. Luz mediterránea. Sin texto."
+        f"Fotografía documental para ilustrar el párrafo sobre '{section[:60]}' del artículo '{title[:60]}' "
+        f"en la Costa Tropical.{content_hint} Estilo National Geographic. Luz mediterránea. Sin texto."
     )
 
 
 async def generate_article_images_manual(
-    article_text: str,
-    title: str,
-    slug: str,
-    category_name: str = "Costa Tropical",
+    article_text: str, title: str, slug: str, category_name: str = "Costa Tropical",
 ) -> Tuple[str, str, str]:
-    """Mode manuel — génère prompts génériques + images (planifié indisponible)."""
     sections = []
+    section_contents = {}
+    current_section = None
+    current_content = []
+
     for l in article_text.split("\n"):
         stripped = l.strip()
         if stripped.startswith("## ") and not stripped.startswith("### "):
-            sections.append(stripped.replace("## ", "").strip()[:80])
+            if current_section:
+                section_contents[current_section] = " ".join(current_content)[:300]
+            sec = stripped.replace("## ", "").strip()[:80]
+            sections.append(sec)
+            current_section = sec
+            current_content = []
         elif stripped.startswith("### "):
-            sections.append(stripped.replace("### ", "").strip()[:80])
+            if current_section:
+                section_contents[current_section] = " ".join(current_content)[:300]
+            sec = stripped.replace("### ", "").strip()[:80]
+            sections.append(sec)
+            current_section = sec
+            current_content = []
+        elif current_section and stripped and not stripped.startswith("#"):
+            current_content.append(stripped)
+    if current_section:
+        section_contents[current_section] = " ".join(current_content)[:300]
 
     plan = [{
-        "section": "hero",
-        "prompt": _generate_generic_prompt(title, ptype="hero"),
-        "type": "hero",
-        "marker": "[[IMG:hero]]",
+        "section": "hero", "prompt": _generate_generic_prompt(title, ptype="hero"),
+        "type": "hero", "marker": "[[IMG:hero]]",
     }]
 
     text_with_markers = article_text
     for i, sec in enumerate(sections):
         marker = f"[[IMG:section-{i+1}]]"
         plan.append({
-            "section": sec,
-            "prompt": _generate_generic_prompt(title, sec, "section"),
-            "type": "section",
-            "marker": marker,
+            "section": sec, "prompt": _generate_generic_prompt(title, sec, section_contents.get(sec, ""), "section"),
+            "type": "section", "marker": marker,
         })
-        # Insérer les marqueurs
         pat = re.compile(r'(^|\n)(##\s*' + re.escape(sec) + r'\s*\n\n)', re.IGNORECASE | re.MULTILINE)
         text_with_markers = pat.sub(r'\1\2' + marker + r'\n\n', text_with_markers, count=1)
 
-    # Marqueur hero après le titre
     h1 = re.search(r'^#\s+(.+)$', text_with_markers, re.MULTILINE)
     if h1:
-        text_with_markers = text_with_markers.replace(
-            h1.group(0) + "\n\n", h1.group(0) + "\n\n[[IMG:hero]]\n\n", 1
-        )
+        text_with_markers = text_with_markers.replace(h1.group(0) + "\n\n", h1.group(0) + "\n\n[[IMG:hero]]\n\n", 1)
 
     return await generate_article_images(text_with_markers, plan, slug)
 
 
-# ─── Wrapper sync (pour appel depuis code non-async) ──────────────
-
 def generate_article_images_sync(text_with_markers, plan, slug):
-    """Wrapper synchrone pour compatibilité ascendante."""
     return asyncio.run(generate_article_images(text_with_markers, plan, slug))
 
 
 def generate_article_images_manual_sync(article_text, title, slug, category_name="Costa Tropical"):
-    """Wrapper synchrone pour backfill_images.py."""
     return asyncio.run(generate_article_images_manual(article_text, title, slug, category_name))
