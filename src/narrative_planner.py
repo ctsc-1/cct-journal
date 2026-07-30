@@ -73,16 +73,19 @@ def _call_llm(system: str, user: str, model: str = NARRATIVE_MODEL, timeout: int
         return ""
 
 
-def _parse_article(text: str) -> Tuple[str, List[str]]:
-    """Extrait le lead (avant premier H2) et les titres de sections H2.
+def _parse_article(text: str) -> Tuple[str, List[str], Dict[str, str]]:
+    """Extrait le lead (avant premier H2), les titres de sections H2, et le CONTENU COMPLET de chaque section.
 
     Returns:
-        (lead_text, list_of_section_titles)
+        (lead_text, list_of_section_titles, {section_title: section_content_full})
     """
     lines = text.split("\n")
     lead_parts = []
     sections = []
+    section_contents = {}
     in_lead = True
+    current_section = None
+    current_content = []
 
     for line in lines:
         stripped = line.strip()
@@ -91,12 +94,23 @@ def _parse_article(text: str) -> Tuple[str, List[str]]:
         if in_lead and stripped and not stripped.startswith("# "):
             lead_parts.append(stripped)
         if not in_lead and stripped.startswith("## ") and not stripped.startswith("### "):
+            # Sauvegarder le contenu COMPLET de la section précédente
+            if current_section:
+                section_contents[current_section] = " ".join(current_content)  # PAS de limite [:300]
             title = stripped.replace("## ", "").strip()
             if title:
                 sections.append(title)
+                current_section = title
+                current_content = []
+        elif current_section and stripped and not stripped.startswith("#"):
+            current_content.append(stripped)
+
+    # Dernière section — contenu COMPLET
+    if current_section:
+        section_contents[current_section] = " ".join(current_content)  # PAS de limite [:300]
 
     lead = " ".join(lead_parts)[:500] if lead_parts else ""
-    return lead, sections
+    return lead, sections, section_contents
 
 
 def plan_images(article_text: str, title: str) -> Tuple[str, List[Dict], str]:
@@ -112,16 +126,24 @@ def plan_images(article_text: str, title: str) -> Tuple[str, List[Dict], str]:
         plan = [{"section": str, "prompt": str, "type": "hero"|"section"}]
         raw_llm_response = réponse brute du LLM (pour debug)
     """
-    lead, sections = _parse_article(article_text)
+    lead, sections, section_contents = _parse_article(article_text)
 
-    # Construire le prompt utilisateur avec les titres exacts des sections
-    sections_str = "\n".join(f"  - {s}" for s in sections) if sections else "(aucune section)"
-    user_prompt = f"TÍTULO: {title}\n\nTEXT:\n\n{article_text[:8000]}\n\n---\n\nSECCIONES DETECTADAS (usa EXACTAMENTE estos títulos, no los modifiques):\n{sections_str}\n\nGenera un prompt para HERO y para CADA sección listada arriba. Los títulos de sección en el JSON deben ser IDÉNTICOS a los listados."
+    # Construire le prompt utilisateur avec titres + CONTENU COMPLET de chaque section
+    # → le LLM génère des prompts qui décrivent ce qui est DANS le paragraphe, pas juste le titre
+    sections_str = "\n".join(
+        f"  - {s}\n    CONTENIDO COMPLETO: {section_contents.get(s, '(vacío)')[:800]}"  # 800 chars au lieu de 200
+        for s in sections
+    ) if sections else "(aucune section)"
+    user_prompt = f"TÍTULO: {title}\n\nLEAD:\n{lead[:300]}\n\n---\n\nSECCIONES DETECTADAS (usa EXACTAMENTE estos títulos, no los modifiques). Para CADA sección, el prompt debe describir lo que el texto DICE, no solo el título:\n{sections_str}\n\nGenera un prompt visual MUY ESPECÍFICO para HERO (basado en el lead) y para CADA sección (basado en el CONTENIDO COMPLETO del párrafo, no solo el título). El prompt debe describir una foto que un fotógrafo podría tomar para ilustrar ESE párrafo específico."
 
     if not sections and not lead:
-        logger.warning("⚠️ Aucune section H2 trouvée dans l'article")
-        return article_text, [], ""
-
+        logger.warning("⚠️ Aucune section H2 trouvée dans l'article — fallback hero uniquement")
+        hero_fallback = f"Fotografía de prensa para artículo '{title[:80]}' en la Costa Tropical. Luz mediterránea natural, estilo documental National Geographic."
+        plan = [{"section": "hero", "prompt": hero_fallback, "type": "hero", "marker": "[[IMG:hero]]"}]
+        marker = "[[IMG:hero]]"
+        text_with_marker = marker + "\n\n" + article_text
+        return text_with_marker, plan, "{}"
+    
     # Appel LLM
     logger.info(f"🎬 Planification narrative: {len(sections)} section(s) détectée(s)")
     raw = _call_llm(SYSTEM_PROMPT, user_prompt)
@@ -155,7 +177,13 @@ def plan_images(article_text: str, title: str) -> Tuple[str, List[Dict], str]:
 
     text_with_markers = article_text
 
-    for i, sec_title in enumerate(sections):
+    # Limiter à 4 images de section (+ 1 hero = 5 images total par article)
+    MAX_SECTION_IMAGES = 4
+    sections_to_image = sections[:MAX_SECTION_IMAGES]
+    if len(sections) > MAX_SECTION_IMAGES:
+        logger.info(f"   ✂️ Limitation à {MAX_SECTION_IMAGES} images de section (sur {len(sections)} sections détectées)")
+
+    for i, sec_title in enumerate(sections_to_image):
         prompt = (section_prompts_llm[i][:500] if i < len(section_prompts_llm) and section_prompts_llm[i]
                   else f"Fotografía documental sobre {sec_title} en la Costa Tropical.")
 

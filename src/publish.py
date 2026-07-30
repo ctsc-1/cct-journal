@@ -51,6 +51,8 @@ def apply_ai_badge(image_url: str) -> bool:
 DOMAIN_CATEGORY = {
     "cultura":     "0cbf59b0-1012-47de-b91e-348600680d65",  # Culture & Traditions
     "gastronomie": "047d7527-d161-4c25-a948-3e6f88aa8a9e",  # Gastronomie & Vin
+    "deportes":    "a0fd785c-50dd-4fad-aa42-ec20015f0e7e",  # Activités & Aventure
+    "turismo":     "fa1f1b9d-d99b-46fc-861d-713aaf405489",  # Tourisme & Loisirs
     "patrimonio":  "6e2d8a37-8f99-4fe8-995a-0499ef80f0ff",  # Histoire & Patrimoine
     "naturaleza":  "573075bf-2c0d-4b84-ba64-1a33107fd03d",  # Géographie & Nature
     "costumbres":  "0cbf59b0-1012-47de-b91e-348600680d65",  # Culture & Traditions
@@ -82,7 +84,9 @@ def _pg() -> psycopg2.connection:
         # Dernier fallback : connexion peer
         db_url = "postgresql:///alejandro_db"
     
-    return psycopg2.connect(db_url, connect_timeout=10)
+    conn = psycopg2.connect(db_url, connect_timeout=10)
+    conn.autocommit = True
+    return conn
 
 
 def _strip_markdown(text: str) -> str:
@@ -123,6 +127,95 @@ def _slugify(text: str, max_len: int = 80) -> str:
     text = re.sub(r"[^\w\s-]", "", text).lower().strip()
     text = re.sub(r"[-\s]+", "-", text)
     return text[:max_len]
+
+
+
+def _generate_slug(title: str, context: str = "") -> str:
+    """Gen slug via LLM -- court, semantique, GEO."""
+    try:
+        import httpx
+        from pipeline.model_env import get_model
+        prompt = (
+            "Genera un slug SEO optimizado para este articulo de la Costa Tropical.\n"
+            + "Titulo: " + title + "\n"
+            + "Reglas: maximo 50 caracteres, solo palabras clave esenciales,"
+            + " sin preposiciones (de en la el los las del para por con),"
+            + " sin numeros, solo guiones.\n"
+            + "Devuelve SOLO el slug."
+        )
+        r = httpx.post(
+            os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000") + "/v1/generate",
+            json={"model": get_model("CLASSIFY", "gemini-2.5-flash-lite"),
+                  "contents": prompt, "caller": "cct-journal-slug"},
+            timeout=15,
+        )
+        r.raise_for_status()
+        slug = r.json().get("text", "").strip().lower()
+        slug = re.sub(r"[^a-z0-9-]", "", slug)[:50]
+        if slug and len(slug) > 5:
+            return slug
+    except Exception as e:
+        logger.warning("Slug generation error: %s", e)
+    return _slugify(title, max_len=50)
+
+
+def _generate_geo_intro(article_text: str, title: str, topic: dict) -> str:
+    """Genere un lead GEO optimise (200 chars, 1 localite + donnees concretes) via LLM."""
+    try:
+        import httpx
+        from pipeline.model_env import get_model
+        context = topic.get("context", "")[:300]
+        prompt = (
+            "Eres un periodista SEO de la Costa Tropical.\\n\\n"
+            + "Genera un LEAD de 200 caracteres MAXIMO para este articulo.\\n"
+            + "Titulo: " + title + "\\n"
+            + "Contexto: " + context + "\\n\\n"
+            + "REGLAS:\\n"
+            + "- EXACTAMENTE 150-200 caracteres\\n"
+            + "- Responde a: Que, Donde, Cuando\\n"
+            + "- Incluye UNA localidad de la Costa Tropical con un dato concreto\\n"
+            + "- Sin descripcion poetica, sin presentacion climatica\\n"
+            + "- Directo, periodistico, con cifras si las hay\\n"
+            + "- Devuelve SOLO el texto del lead, nada mas."
+        )
+        r = httpx.post(
+            os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000") + "/v1/generate",
+            json={"model": get_model("CLASSIFY", "gemini-2.5-flash-lite"),
+                  "contents": prompt, "caller": "cct-journal-geo"},
+            timeout=15,
+        )
+        r.raise_for_status()
+        lead = r.json().get("text", "").strip()
+        if lead and 120 < len(lead) < 250:
+            logger.info("Geo lead generated (%d chars)", len(lead))
+            return lead
+    except Exception as e:
+        logger.warning("Geo intro generation error: %s", e)
+    return ""
+
+
+def _replace_lead_in_text(text: str, new_lead: str) -> str:
+    """Remplace le premier paragraphe (lead) par la version GEO optimisee."""
+    lines = text.split("\\n")
+    in_lead = True
+    result = []
+    for line in lines:
+        stripped = line.strip()
+        if in_lead:
+            if stripped.startswith("# ") or stripped.startswith("## "):
+                result.append(line)
+                continue
+            if stripped.startswith("!["):
+                result.append(line)
+                continue
+            if stripped:
+                result.append(new_lead)
+                in_lead = False
+                continue
+            result.append(line)
+        else:
+            result.append(line)
+    return "\\n".join(result)
 
 
 def _word_aware_truncate(text: str, max_len: int = 350) -> str:
@@ -211,9 +304,17 @@ def publish_trilingual(
     excerpt_es = _extract_excerpt(es_text) or excerpt_fr
     excerpt_en = _extract_excerpt(en_text) or excerpt_fr
     
-    # Slug — généré depuis le titre ES pour le SEO/GEO
-    slug_base = _slugify(title_es or title_fr or topic['id'], max_len=75)
+    # Slug — généré par LLM (court, sémantique, GEO-optimisé)
+    slug_base = _generate_slug(title_es or title_fr or topic['id'], topic.get("context", ""))
     slug = slug_base
+
+    # Lead GEO — généré par LLM (200 caracteres, 1 localite + donnees concretes)
+    geo_intro = _generate_geo_intro(es_text, title_es, topic)
+    if geo_intro:
+        # Remplacer le lead existant par la version GEO-optimisee
+        es_text = _replace_lead_in_text(es_text, geo_intro)
+        fr_text = _replace_lead_in_text(fr_text, geo_intro) if fr_text else es_text
+        en_text = _replace_lead_in_text(en_text, geo_intro) if en_text else es_text
 
     # Catégorie (priorité au category_id du topic, sinon mapping par domain)
     category_id = topic.get("category_id") or DOMAIN_CATEGORY.get(topic.get("domain", ""), DEFAULT_CATEGORY)

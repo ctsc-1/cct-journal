@@ -39,6 +39,35 @@ Format de réponse (JSON uniquement) :
 Texte à analyser :
 """
 
+# ─── Détection d'hallucinations (inventions, rencontres fictives, personnes imaginaires) ───
+
+PROMPT_HALLUCINATION = """Tu es un détecteur d'hallucinations journalistiques.
+Analyse le texte suivant et identifie TOUT contenu qui pourrait être INVENTÉ par l'auteur :
+
+1. Rencontres physiques ou conversations avec des personnes nommées qui semblent fictives
+2. Personnes imaginaires — noms propres qui ne correspondent à aucune personne réelle identifiable
+3. Citations inventées — paroles attribuées à quelqu'un qui semblent fabriquées
+4. Événements fabriqués — faits locaux qui n'ont pas eu lieu
+5. Anecdotes personnelles présentées comme réelles mais qui semblent fictives
+
+Un article journalistique NE DOIT PAS contenir de rencontres inventées, de personnes imaginaires,
+ni de citations fabriquées. Le journalisme narratif est autorisé (atmosphère, contexte) mais
+les faits, personnes et citations doivent être RÉELS.
+
+Format de réponse (TEXTE SIMPLE, une ligne par hallucination) :
+
+Si hallucination détectée :
+HALLUC|type|severite|extrait (max 100 chars)|raison (max 150 chars)
+
+Types: rencontre_inventee, personne_imaginaire, citation_inventee, evenement_fabrique, anecdote_fictive
+Severite: 1 à 5 (5 = certainement inventé, 3 = suspect)
+
+Si AUCUNE hallucination :
+PROPRE
+
+Texte à analyser :
+"""
+
 
 def _gateway_chat(messages: list, max_tokens: int = 500, temperature: float = 0.1) -> str:
     """Appelle la Gateway CCT-Alejandro (OpenAI-compatible)."""
@@ -142,6 +171,213 @@ def verify_affirmation(affirmation: dict, lang: str = "fr") -> dict:
     }
 
 
+def detect_hallucinations(text: str, lang: str = "es") -> dict:
+    """Détecte les hallucinations journalistiques AU NIVEAU PARAGRAPHE.
+    
+    Double vérificateur conservateur. Pour chaque hallucination détectée,
+    identifie le paragraphe concerné pour suppression chirurgicale.
+    
+    Returns:
+        dict avec: hallucinations (list), has_hallucinations (bool), 
+        has_blocking_hallucinations (bool), paragraphs_to_remove (list of str)
+    """
+    if not text or len(text) < 200:
+        return {"hallucinations": [], "has_hallucinations": False, "has_blocking_hallucinations": False, "paragraphs_to_remove": []}
+    
+    # ─── Vérificateur 1 : détection active ───
+    result1 = _detect_hallucinations_v1(text, lang)
+    
+    # ─── Vérificateur 2 : contre-interrogatoire indépendant ───
+    result2 = _detect_hallucinations_v2(text, lang)
+    
+    # ─── Fusion conservatrice ───
+    halluc1 = result1.get("hallucinations", [])
+    halluc2 = result2.get("hallucinations", [])
+    has_error = "error" in result1 or "error" in result2
+    
+    # Fusion + déduplication
+    all_halluc = halluc1 + halluc2
+    seen = set()
+    merged = []
+    for h in all_halluc:
+        key = h.get("extrait", "")[:50].lower()
+        if key not in seen:
+            seen.add(key)
+            merged.append(h)
+    
+    has_blocking = any(h.get("severite", 0) >= 3 for h in merged)
+    
+    if has_error:
+        has_blocking = True
+        merged.append({
+            "type": "erreur_verificateur",
+            "severite": 5,
+            "extrait": "(vérificateur en erreur)",
+            "raison": "Un des deux vérificateurs a échoué — mesure conservatrice: blocage",
+        })
+    
+    # ─── Identifier les paragraphes à supprimer ───
+    paragraphs_to_remove = _identify_paragraphs_to_remove(text, merged)
+    
+    return {
+        "hallucinations": merged,
+        "has_hallucinations": len(merged) > 0,
+        "has_blocking_hallucinations": has_blocking,
+        "paragraphs_to_remove": paragraphs_to_remove,
+        "verifier1_clean": len(halluc1) == 0,
+        "verifier2_clean": len(halluc2) == 0,
+    }
+
+
+def _identify_paragraphs_to_remove(text: str, hallucinations: list) -> list:
+    """Identifie les paragraphes complets qui contiennent des hallucinations.
+    Retourne une liste des paragraphes (texte complet) à supprimer."""
+    if not hallucinations:
+        return []
+    
+    # Découper le texte en paragraphes (séparés par lignes vides)
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip() and len(p.strip()) > 30]
+    
+    to_remove = []
+    for halluc in hallucinations:
+        if halluc.get("severite", 0) < 3:
+            continue  # Seulement les bloquants
+        
+        extrait = halluc.get("extrait", "").lower()[:60]
+        if not extrait:
+            continue
+        
+        # Trouver le paragraphe qui contient cet extrait
+        for para in paragraphs:
+            # Normaliser pour la comparaison (enlever markdown, espaces)
+            para_clean = re.sub(r'[*#`\[\]()]', '', para).lower()
+            extrait_clean = re.sub(r'[*#`\[\]()]', '', extrait).lower()
+            
+            # Comparaison par mots-clés (premiers 5 mots significatifs de l'extrait)
+            extrait_words = [w for w in extrait_clean.split() if len(w) > 3][:5]
+            if len(extrait_words) >= 2 and all(w in para_clean for w in extrait_words):
+                if para not in to_remove:
+                    to_remove.append(para)
+                break
+    
+    return to_remove
+
+
+def remove_paragraphs(text: str, paragraphs_to_remove: list) -> str:
+    """Supprime les paragraphes litigieux du texte. Conserve le reste.
+    Nettoie aussi les titres de section qui se retrouvent vides."""
+    if not paragraphs_to_remove:
+        return text
+    
+    cleaned = text
+    for para in paragraphs_to_remove:
+        cleaned = cleaned.replace(para, "")
+        cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    
+    # Nettoyer les titres de section vides (## Titre\n\n## suivant titre sans contenu entre)
+    cleaned = re.sub(r'(^|\n)(#{1,3}\s+.+)\n\n(#{1,3}\s+)', r'\1\3', cleaned)
+    # Nettoyer les titres en fin de texte sans contenu après
+    cleaned = re.sub(r'\n(#{1,3}\s+.+)\s*$', '', cleaned)
+    
+    return cleaned.strip()
+
+
+def _detect_hallucinations_v1(text: str, lang: str = "es") -> dict:
+    """Vérificateur 1 : détection active — cherche les hallucinations."""
+    try:
+        content = _gateway_chat(
+            [
+                {"role": "system", "content": PROMPT_HALLUCINATION},
+                {"role": "user", "content": text[:10000]},
+            ],
+            max_tokens=1500,
+            temperature=0.1,
+        )
+        
+        hallucinations = _parse_halluc_lines(content)
+        return {"hallucinations": hallucinations}
+    except Exception as e:
+        logger.warning(f"Vérificateur 1 échoué: {e}")
+        return {"hallucinations": [], "error": str(e)}
+
+
+PROMPT_HALLUCINATION_V2 = """Tu es un éditeur de presse expérimenté. Tu dois valider ou rejeter un article.
+
+L'article DOIT être rejeté s'il contient :
+- Des rencontres ou conversations avec des personnes qui semblent inventées
+- Des noms de personnes qui ne correspondent à aucune personne réelle identifiable
+- Des citations fabriquées (paroles attribuées à quelqu'un de suspect)
+- Des événements, prix ou cérémonies qui ne se sont pas réellement produits
+- Des anecdotes présentées comme réelles mais qui semblent fictives
+
+Sois CONSERVATEUR. En cas de doute, rejette. Un article inventé publié est pire qu'un article bon rejeté.
+
+Réponds en TEXTE SIMPLE :
+- Si l'article est PROPRE (aucune invention) : écris UNIQUEMENT "PROPRE"
+- Si l'article contient des inventions, écris une ligne par problème :
+REJET|type|extrait (max 100 chars)|raison (max 150 chars)
+
+Types: rencontre_inventee, personne_imaginaire, citation_inventee, evenement_fabrique, anecdote_fictive
+
+Article à valider :
+"""
+
+
+def _detect_hallucinations_v2(text: str, lang: str = "es") -> dict:
+    """Vérificateur 2 : contre-interrogatoire indépendant avec prompt différent.
+    Seuil plus conservateur (rejette au moindre doute)."""
+    try:
+        content = _gateway_chat(
+            [
+                {"role": "system", "content": PROMPT_HALLUCINATION_V2},
+                {"role": "user", "content": text[:10000]},
+            ],
+            max_tokens=1500,
+            temperature=0.1,
+        )
+        
+        hallucinations = []
+        for line in content.strip().splitlines():
+            line = line.strip()
+            if line.startswith("REJET|"):
+                parts = line.split("|", 3)
+                if len(parts) >= 4:
+                    _, htype, extrait, raison = parts[0], parts[1], parts[2], parts[3]
+                    hallucinations.append({
+                        "type": htype.strip(),
+                        "severite": 4,  # V2 est conservateur — tout rejet = sévérité 4 minimum
+                        "extrait": extrait.strip()[:100],
+                        "raison": raison.strip()[:150],
+                    })
+        
+        return {"hallucinations": hallucinations}
+    except Exception as e:
+        logger.warning(f"Vérificateur 2 échoué: {e}")
+        return {"hallucinations": [], "error": str(e)}
+
+
+def _parse_halluc_lines(content: str) -> list:
+    """Parse les lignes HALLUC| du vérificateur 1."""
+    hallucinations = []
+    for line in content.strip().splitlines():
+        line = line.strip()
+        if line.startswith("HALLUC|"):
+            parts = line.split("|", 4)
+            if len(parts) >= 5:
+                _, htype, sev, extrait, raison = parts[0], parts[1], parts[2], parts[3], parts[4]
+                try:
+                    severite = int(sev.strip())
+                except ValueError:
+                    severite = 3
+                hallucinations.append({
+                    "type": htype.strip(),
+                    "severite": severite,
+                    "extrait": extrait.strip()[:100],
+                    "raison": raison.strip()[:150],
+                })
+    return hallucinations
+
+
 def verify_article(text: str, lang: str = "fr") -> dict:
     """
     Vérification factuelle d'un article complet.
@@ -175,7 +411,12 @@ def verify_article(text: str, lang: str = "fr") -> dict:
     penalite = (nb_contredit / nb) * 5 if nb > 0 else 0
     score = max(0, min(10, score_si_confirme - penalite))
 
-    if nb_contredit > 0:
+    # ─── Détection d'hallucinations (rencontres inventées, personnes imaginaires) ───
+    halluc = detect_hallucinations(text, lang)
+    has_halluc = halluc.get("has_blocking_hallucinations", False)
+    halluc_details = halluc.get("hallucinations", [])
+
+    if nb_contredit > 0 or has_halluc:
         niveau = "bloquant"
     elif score < 5:
         niveau = "revision_humaine"
@@ -185,15 +426,19 @@ def verify_article(text: str, lang: str = "fr") -> dict:
         niveau = "ok"
 
     elapsed = int((time.time() - t0) * 1000)
-    logger.info(f"[Verify] {nb} affirmations: {nb_confirme}✓ {nb_contredit}✗ {nb_nv}? | Score: {score}/10 | {elapsed}ms")
+    halluc_count = len(halluc_details)
+    logger.info(f"[Verify] {nb} affirmations: {nb_confirme}✓ {nb_contredit}✗ {nb_nv}? | Hallucinations: {halluc_count} | Score: {score}/10 | {elapsed}ms")
 
     return {
         "score_global": round(score, 1),
-        "valide": nb_contredit == 0,
+        "valide": nb_contredit == 0 and not has_halluc,
         "niveau_alerte": niveau,
         "nb_confirme": nb_confirme,
         "nb_contredit": nb_contredit,
         "nb_non_verifiable": nb_nv,
         "affirmations": results,
+        "hallucinations": halluc_details,
+        "nb_hallucinations": halluc_count,
+        "has_hallucinations": has_halluc,
         "temps_ms": elapsed,
     }

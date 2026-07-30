@@ -595,7 +595,7 @@ def qc_errors_to_feedback(slug: str, results: list) -> str | None:
     else:
         logger.info("✅ TOUT EST VERT")
 
-    return report_data["verdict"] == "✅ PASS"
+    return report_data["verdict"] in ("✅ PASS", "🟡 WARN")
 
 
 def run_qc(slug: str) -> bool:

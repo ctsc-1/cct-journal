@@ -1,5 +1,5 @@
 """
-rotor.py — Sélection du sujet du Journal CCT par rotation sur 11 catégories.
+rotor.py — Sélection du sujet du Journal CCT par rotation sur 12 catégories.
 
 Remplace le système topics.yaml par un rotor automatique.
 Chaque jour : catégorie tournante → sujet auto-généré via LLM → Deep Search.
@@ -69,10 +69,19 @@ CATEGORIES = [
         "id": "actividades-aventura",
         "category_id": "a0fd785c-50dd-4fad-aa42-ec20015f0e7e",
         "name_es": "Actividades y Aventura",
-        "domain": "turismo",
+        "domain": "deportes",
         "description": "Sports nautiques, randonnée, plongée, escalade, activités de plein air.",
         "angle": "Guide pratique des activités : où, quand, comment, conseils et bons plans.",
         "tags": ["actividades", "aventura", "deportes", "turismo_activo"],
+    },
+    {
+        "id": "turismo-ocio",
+        "category_id": "fa1f1b9d-d99b-46fc-861d-713aaf405489",
+        "name_es": "Turismo y Ocio",
+        "domain": "turismo",
+        "description": "Hébergements, itinéraires, visites guidées, vie nocturne, excursions et découvertes touristiques de la Costa Tropical.",
+        "angle": "Guide touristique vivant : où dormir, que visiter, sorties, bons plans pour tous les budgets.",
+        "tags": ["turismo", "ocio", "alojamiento", "excursiones", "vida_nocturna"],
     },
     {
         "id": "historia-patrimonio",
@@ -145,11 +154,13 @@ def _save_index(idx: int):
         logger.warning(f"⚠️ Rotor index save error: {e}")
 
 
-def select_category(today: str | None = None) -> dict:
+def select_category(today: str | None = None, offset: int = 0) -> dict:
     """Sélectionne la catégorie du jour par rotation.
 
     Args:
         today: Date YYYY-MM-DD (défaut: aujourd'hui)
+        offset: 0 = catégorie normale (incrémente le rotor)
+                1 = catégorie suivante (sans incrémenter — pour second article)
 
     Returns:
         La catégorie choisie (dict avec id, name_es, domain, description, angle, tags, category_id)
@@ -157,17 +168,28 @@ def select_category(today: str | None = None) -> dict:
     today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     last_idx = _load_index()
 
-    # Premier run ou reset : commence à 0
-    if last_idx < 0 or last_idx >= len(CATEGORIES) - 1:
-        new_idx = 0
+    if offset == 0:
+        # Slot A : incrémente et sauvegarde
+        if last_idx < 0 or last_idx >= len(CATEGORIES) - 1:
+            new_idx = 0
+        else:
+            new_idx = last_idx + 1
+        _save_index(new_idx)
+        logger.info(f"🎯 Catégorie du jour (A) [{new_idx + 1}/{len(CATEGORIES)}] : {CATEGORIES[new_idx]['name_es']}")
     else:
-        new_idx = last_idx + 1
+        # Slot B : catégorie suivante sans sauvegarder
+        if last_idx < 0 or last_idx >= len(CATEGORIES) - 1:
+            new_idx = 0
+        else:
+            new_idx = last_idx + 1
+        # Incrémenter encore pour avoir la suivante
+        if new_idx >= len(CATEGORIES) - 1:
+            new_idx = 0
+        else:
+            new_idx = new_idx + 1
+        logger.info(f"🎯 Catégorie du jour (B) [{new_idx + 1}/{len(CATEGORIES)}] : {CATEGORIES[new_idx]['name_es']}")
 
-    category = CATEGORIES[new_idx]
-    _save_index(new_idx)
-
-    logger.info(f"🎯 Catégorie du jour [{new_idx + 1}/{len(CATEGORIES)}] : {category['name_es']}")
-    return category
+    return CATEGORIES[new_idx]
 
 
 def _get_recent_titles(limit: int = 7) -> list:
@@ -318,12 +340,13 @@ def generate_topic(category: dict, date_str: str | None = None) -> dict:
         }
 
 
-def select_topic(today: str | None = None, force_category: str | None = None) -> dict:
+def select_topic(today: str | None = None, force_category: str | None = None, offset: int = 0) -> dict:
     """Point d'entrée unique : sélectionne catégorie + génère sujet.
 
     Args:
         today: Date YYYY-MM-DD
         force_category: Slug de catégorie à forcer (optionnel)
+        offset: 0 = article A (incrémente rotor), 1 = article B (catégorie suivante)
 
     Returns:
         Dict topic complet {id, domain, title, angle, context, tags, category_id}
@@ -335,7 +358,7 @@ def select_topic(today: str | None = None, force_category: str | None = None) ->
         )
         logger.info(f"🎯 Catégorie forcée: {category['name_es']}")
     else:
-        category = select_category(today)
+        category = select_category(today, offset=offset)
 
     topic = generate_topic(category, today)
 

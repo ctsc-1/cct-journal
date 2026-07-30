@@ -35,7 +35,10 @@ def _gateway_call(model: str, system: str, user: str, caller: str = "cct-journal
             result, _ = asyncio.run(fastcheck_text(user, lang="es", sources="", caller=caller))
             return result if result else ""
         else:
-            result = asyncio.run(generate_text(system, user, max_tokens=16000, temperature=0.5, caller=caller))
+            # Génération ES : temperature basse (0.3) pour du factuel
+            # Traduction : temperature plus haute (1.3) pour du naturel
+            temp = 1.3 if "translate" in caller.lower() or caller in ("cct-journal-fr", "cct-journal-en") else 0.3
+            result = asyncio.run(generate_text(system, user, max_tokens=16000, temperature=temp, caller=caller))
             return result
     except Exception as e:
         logger.error(f"❌ [{caller}] LLM call failed: {e}")
@@ -131,6 +134,11 @@ def generate_spanish(topic: dict, date: datetime | None = None, deep_context: st
     qc_feedback = topic.get("qc_feedback", "")
     if qc_feedback and len(qc_feedback) > 10:
         user += f"\n\nFEEDBACK DE CONTROL DE CALIDAD (correcciones necesarias):\n{qc_feedback}"
+
+    # Feedback Cortex/Brainstorm pour la réflexion pré-génération
+    cortex_fb = topic.get("cortex_feedback", "")
+    if cortex_fb and len(cortex_fb) > 10:
+        user += f"\n\n### 🧠 PLAN EDITORIAL (generado por analisis previo)\n{cortex_fb}"
 
     logger.info(f"Generating ES — topic={topic['id']} domain={topic['domain']}")
     system = SYSTEM_PROMPT_JOURNAL_ES.format(target_words=topic.get("target_words", 4000))
