@@ -271,6 +271,8 @@ CONTEXTO GLOBAL DEL ARTICULO:
 
 {prev_context}
 REGLAS ABSOLUTAS:
+- OBLIGATOIRE: Inclus au moins UN TABLEAU MARKDOWN de donnees chiffrees comparatives dans cet article.
+- PROHIBIDO repetir conectores usados previamente (evita 'Por otro lado', 'En este sentido', 'Cabe destacar').
 - Escribe 900-1200 palabras SOLO para esta seccion (la seccion #{h2_index+1}).
 - Empieza DIRECTAMENTE con el contenido, NO repitas el titulo H2.
 - NO escribas otros H2, solo ESTA seccion.

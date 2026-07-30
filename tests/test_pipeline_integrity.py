@@ -198,8 +198,8 @@ def check_rotor():
     log.info("🔄 7. Rotor 11 catégories...")
     sys.path.insert(0, str(SRC))
     from rotor import CATEGORIES
-    check(len(CATEGORIES) == 11, f"{len(CATEGORIES)} catégories dans le rotor",
-          f"Attendu: 11, trouvé: {len(CATEGORIES)}")
+    check(len(CATEGORIES) == 12, f"{len(CATEGORIES)} catégories dans le rotor",
+          f"Attendu: 12, trouvé: {len(CATEGORIES)}")
     ids = [c["id"] for c in CATEGORIES]
     check(len(set(ids)) == len(ids), "IDs de catégories uniques",
           "Doublon détecté dans CATEGORIES")

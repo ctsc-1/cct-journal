@@ -105,6 +105,14 @@ def insert_article(title_fr: str, title_es: str, title_en: str, slug: str,
         else:
             log(f"   ⚠️ Local API {verify_r.status_code}")
 
+        # TRIGGER INSTANTANE ALEJANDRO-SEO-TRILINGUAL
+        try:
+            log('[SEO] Declenchement instantane alejandro-seo-trilingual...')
+            import subprocess
+            subprocess.run(['python3', '/root/.hermes/profiles/alejandro-seo-trilingual/workspace/auto_process_new_articles.py'], check=False)
+        except Exception as seo_err:
+            log(f'   [WARN] Instant SEO Trigger: {seo_err}')
+
         return True
     except Exception as e:
         log(f"   ❌ DB error: {e}")

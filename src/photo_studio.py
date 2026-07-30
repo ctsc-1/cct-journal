@@ -287,7 +287,8 @@ def inject_markers(article_text: str, gallery: list[dict]) -> str:
         # Hero: avant le premier H2
         if not used_hero and stripped.startswith('## '):
             if img_idx < len(gallery):
-                result.append(f"[[PHOTO:{img_idx}]]")
+                caption_text = gallery[img_idx].get("caption", "Illustration documentaire Costa Tropical")
+                result.append(f'<figure class="cct-article-image"><img src="{gallery[img_idx]["url"]}" alt="{caption_text}" loading="lazy" /><figcaption>{caption_text}</figcaption></figure>')
                 result.append("")
                 img_idx += 1
                 used_hero = True
@@ -298,7 +299,8 @@ def inject_markers(article_text: str, gallery: list[dict]) -> str:
         if stripped.startswith('## ') and used_hero:
             if img_idx < len(gallery):
                 result.append("")
-                result.append(f"[[PHOTO:{img_idx}]]")
+                caption_text = gallery[img_idx].get("caption", "Illustration documentaire Costa Tropical")
+                result.append(f'<figure class="cct-article-image"><img src="{gallery[img_idx]["url"]}" alt="{caption_text}" loading="lazy" /><figcaption>{caption_text}</figcaption></figure>')
                 img_idx += 1
 
     return '\n'.join(result)
