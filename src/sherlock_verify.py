@@ -74,7 +74,7 @@ def _gateway_chat(messages: list, max_tokens: int = 500, temperature: float = 0.
     resp = httpx.post(
         GATEWAY_CHAT_URL,
         json={
-            "model": get_model("FASTCHECK", "gemini-3.5-flash"),
+            "model": get_model("FASTCHECK", "deepseek-v4-pro"),
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,

@@ -24,7 +24,7 @@ import httpx
 
 # ─── CONFIG ─────────────────────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-MODEL_LIGHT = "gemini-2.5-flash-lite"
+MODEL_LIGHT = "deepseek-v4-pro"
 OUTPUT_DIR = Path("/srv/pwa/public/images/journal")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 DATE = datetime.now().strftime("%Y-%m-%d")

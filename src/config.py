@@ -18,14 +18,14 @@ def _load_model(task: str, default: str) -> str:
         pass
     return default
 
-GEN_MODEL = _load_model("SYNTHESIS", "gemini-3.1-flash-lite")
-TRANSLATION_MODEL = _load_model("TRANSLATION", "gemini-2.5-flash-lite")
-QC_MODEL = _load_model("QC", "gemini-3.5-flash")
-FASTCHECK_MODEL = _load_model("FASTCHECK", "gemini-3.5-flash")
-CLASSIFY_MODEL = _load_model("CLASSIFY", "gemini-2.5-flash-lite")
-ROTOR_MODEL = _load_model("ROTOR", "gemini-2.5-flash-lite")
-HUMANIZE_MODEL = _load_model("HUMANIZE", "gemini-2.5-flash-lite")
-NARRATIVE_MODEL = _load_model("NARRATIVE", "gemini-2.5-flash-lite")
+GEN_MODEL = _load_model("SYNTHESIS", "deepseek-v4-flash")
+TRANSLATION_MODEL = _load_model("TRANSLATION", "deepseek-v4-flash")
+QC_MODEL = _load_model("QC", "deepseek-v4-pro")
+FASTCHECK_MODEL = _load_model("FASTCHECK", "deepseek-v4-pro")
+CLASSIFY_MODEL = _load_model("CLASSIFY", "deepseek-v4-flash")
+ROTOR_MODEL = _load_model("ROTOR", "deepseek-v4-flash")
+HUMANIZE_MODEL = _load_model("HUMANIZE", "deepseek-v4-flash")
+NARRATIVE_MODEL = _load_model("NARRATIVE", "deepseek-v4-pro")
 EMBED_MODEL = _load_model("EMBEDDING", "text-embedding-002")
 
 # ─── PostgreSQL ─────────────────────────────────────────────────────────────

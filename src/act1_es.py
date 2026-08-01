@@ -32,8 +32,8 @@ GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-MODEL_HEAVY = "gemini-3.6-flash"       # Génération article ES (appels H2)
-MODEL_LIGHT = "gemini-2.5-flash-lite"  # DeepSearch, planification, résumés
+MODEL_HEAVY = "deepseek-v4-pro"       # Génération article ES (appels H2)
+MODEL_LIGHT = "deepseek-v4-flash"  # DeepSearch, planification, résumés
 
 TIMEOUT_SECTION = 180  # Génération d'un H2 (900-1200 mots)
 TIMEOUT_LIGHT = 60

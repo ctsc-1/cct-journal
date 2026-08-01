@@ -8,7 +8,7 @@ Analyse le sujet du rotor AVANT génération :
 - Types d'images suggérées
 
 Modèle : configurable via /etc/cct/models.env (MODEL_CORTEX)
-Fallback : gemini-2.5-flash-lite si modèle non alloué
+Fallback : deepseek-v4-flash si modèle non alloué
 Consommation : ~500 tokens — peut utiliser un modèle "intelligent"
 """
 from __future__ import annotations
@@ -22,7 +22,7 @@ logger = logging.getLogger("cct-journal.cortex")
 GATEWAY_URL = "http://127.0.0.1:4000"
 
 # Modèle par défaut si MODEL_CORTEX non défini dans models.env
-DEFAULT_CORTEX_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_CORTEX_MODEL = "deepseek-v4-flash"
 
 CORTEX_SYSTEM_PROMPT = """Eres un editor jefe adjunto especializado en **analisis editorial previo**.
 

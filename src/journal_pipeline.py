@@ -38,9 +38,9 @@ def log(msg, newline=True):
 
 def llm(prompt, max_tokens=MAX_TOKENS, temp=0.3, timeout=TIMEOUT, lightweight=False):
     """Appel Gateway avec max_tokens SURDIMENSIONNE.
-    lightweight=True → gemini-2.5-flash-lite (RPD illimité, DeepSearch/metadonnées/traductions).
-    lightweight=False → gemini-3.6-flash (article ES uniquement)."""
-    model = "gemini-2.5-flash-lite" if lightweight else "gemini-3.6-flash"
+    lightweight=True → deepseek-v4-flash (RPD illimité, DeepSearch/metadonnées/traductions).
+    lightweight=False → deepseek-v4-pro (article ES uniquement)."""
+    model = "deepseek-v4-flash" if lightweight else "deepseek-v4-pro"
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={
@@ -142,7 +142,7 @@ def run(category_id, topic_override=None, category_name="Gastronomía y Vino"):
     start = time.time()
     total_tokens = 0
     
-    # 1. DeepSearch SearXNG (gemini-2.5-flash-lite, RPD illimité)
+    # 1. DeepSearch SearXNG (deepseek-v4-pro)
     log("📡 1. DeepSearch Phase 1 (SearXNG + Flash Lite)")
     searches = [
         f"vino DO Granada Costa Tropical bodegas {DATE[:7]}",
@@ -202,7 +202,7 @@ def run(category_id, topic_override=None, category_name="Gastronomía y Vino"):
     title_es = title_es[:50]
     slug = slug[:45]
     
-    # Traductions (lightweight: gemini-2.5-flash-lite)
+    # Traductions (lightweight: deepseek-v4-flash)
     title_fr = llm(f"Traduis ce titre en français, max 45 caracteres, direct. Reponds uniquement le titre: {title_es}", max_tokens=80, temp=0.2, lightweight=True)
     title_en = llm(f"Translate to English, max 45 chars, punchy. Only the title: {title_es}", max_tokens=80, temp=0.2, lightweight=True)
     lead_fr = llm(f"Traduis en français, 150-200 caracteres. Une localite, un chiffre. Direct: {lead_es}", max_tokens=200, temp=0.2, lightweight=True)

@@ -17,8 +17,8 @@ logging.basicConfig(
 logger = logging.getLogger("generate-mascotas")
 
 GATEWAY_URL = "http://127.0.0.1:4000"
-GEN_MODEL = "gemini-3-flash-preview"
-TRANS_MODEL = "gemini-3.1-flash-lite-preview"
+GEN_MODEL = "deepseek-v4-flash"
+TRANS_MODEL = "deepseek-v4-flash"
 
 GATEWAY_KEY = os.environ.get("GATEWAY_KEY")
 if not GATEWAY_KEY:

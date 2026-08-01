@@ -13,7 +13,7 @@ from typing import Dict, List, Optional
 logger = logging.getLogger("cct-journal.ai-detectability")
 
 GATEWAY_URL = "http://127.0.0.1:4000"
-DETECTOR_MODEL = "gemini-2.5-flash-lite"
+DETECTOR_MODEL = "deepseek-v4-flash"
 
 DETECTOR_PROMPT = """Eres un experto en detección de textos generados por inteligencia artificial.
 Analiza el texto siguiente y determina si fue escrito por un humano o por una IA.

@@ -16,7 +16,7 @@ import httpx
 from pipeline_cache import load_step, save_step
 
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-MODEL = "gemini-2.5-flash-lite"
+MODEL = "deepseek-v4-flash"
 TIMEOUT = 120
 
 

@@ -25,7 +25,7 @@ import psycopg2
 
 # ─── CONFIG SURDIMENSIONNÉE ─────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-MODEL_LIGHT = "gemini-2.5-flash-lite"    # Sondage, scoring, sélection
+MODEL_LIGHT = "deepseek-v4-flash"    # Sondage, scoring, sélection
 MODEL_EMBED = "gemini-embedding-2"       # Embeddings via Gateway
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 

@@ -2,7 +2,7 @@
 """
 Pipeline génération article 'Écoles et Éducation sur la Costa Tropical'.
 Étape 1 : Génération ES via Gateway LLM (gemini-2.5-pro)
-Étape 2 : Traduction FR/EN via Gateway LLM (gemini-2.5-flash-lite)
+Étape 2 : Traduction FR/EN via Gateway LLM (deepseek-v4-flash)
 Étape 3 : Planification narrative + images
 Étape 4 : Publication
 """
@@ -23,8 +23,8 @@ logging.basicConfig(
 logger = logging.getLogger("generate-education")
 
 GATEWAY_URL = "http://127.0.0.1:4000"
-GEN_MODEL = "gemini-3-flash-preview"  # qualité article
-TRANS_MODEL = "gemini-2.5-flash-lite" # traduction légère
+GEN_MODEL = "deepseek-v4-flash"  # qualité article
+TRANS_MODEL = "deepseek-v4-flash" # traduction légère
 
 # Token Bearer
 GATEWAY_KEY = os.environ.get("GATEWAY_KEY")

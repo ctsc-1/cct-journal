@@ -145,7 +145,7 @@ def _generate_slug(title: str, context: str = "") -> str:
         )
         r = httpx.post(
             os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000") + "/v1/generate",
-            json={"model": get_model("CLASSIFY", "gemini-2.5-flash-lite"),
+            json={"model": get_model("CLASSIFY", "deepseek-v4-flash"),
                   "contents": prompt, "caller": "cct-journal-slug"},
             timeout=15,
         )
@@ -180,7 +180,7 @@ def _generate_geo_intro(article_text: str, title: str, topic: dict) -> str:
         )
         r = httpx.post(
             os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000") + "/v1/generate",
-            json={"model": get_model("CLASSIFY", "gemini-2.5-flash-lite"),
+            json={"model": get_model("CLASSIFY", "deepseek-v4-flash"),
                   "contents": prompt, "caller": "cct-journal-geo"},
             timeout=15,
         )

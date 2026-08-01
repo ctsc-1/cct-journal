@@ -32,8 +32,8 @@ from images import generate_article_images_manual
 DATE_STR = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 CATEGORY_ID = "4a45150c-8404-4598-ba31-abee29ab40d8"
 AUTHOR_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
-GEN_MODEL_ES = "gemini-3-flash-preview"
-TRANS_MODEL = "gemini-3.1-flash-lite-preview"
+GEN_MODEL_ES = "deepseek-v4-flash"
+TRANS_MODEL = "deepseek-v4-flash"
 
 # ─── Annonceurs trouvés dans la DB ──────────────────────────────────────────
 

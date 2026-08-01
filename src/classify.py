@@ -49,7 +49,7 @@ def classify_topic(topic: dict) -> Tuple[str, int, str]:
         r = httpx.post(
             f"{GATEWAY_URL}/v1/generate",
             json={
-                "model": get_model("CLASSIFY", "gemini-2.5-flash-lite"),
+                "model": get_model("CLASSIFY", "deepseek-v4-flash"),
                 "contents": prompt,
                 "caller": "cct-journal-classify",
             },

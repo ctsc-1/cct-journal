@@ -296,7 +296,7 @@ def generate_topic(category: dict, date_str: str | None = None) -> dict:
         r = httpx.post(
             f"{GATEWAY_URL}/v1/generate",
             json={
-                "model": get_model("ROTOR", "gemini-2.5-flash-lite"),
+                "model": get_model("ROTOR", "deepseek-v4-flash"),
                 "contents": prompt,
                 "caller": "cct-journal-rotor",
             },
