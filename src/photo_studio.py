@@ -24,12 +24,31 @@ import httpx
 
 # ─── CONFIG ─────────────────────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
+DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 MODEL_LIGHT = "deepseek-v4-pro"
 OUTPUT_DIR = Path("/srv/pwa/public/images/journal")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 DATE = datetime.now().strftime("%Y-%m-%d")
 TIMEOUT_IMAGE = 120  # génération FAL
 TIMEOUT_LLM = 60     # génération de prompt
+
+DEEPSEEK_API_KEY = None
+
+def _get_deepseek_key() -> str:
+    global DEEPSEEK_API_KEY
+    if DEEPSEEK_API_KEY:
+        return DEEPSEEK_API_KEY
+    try:
+        import re
+        with open("/root/.hermes/config.yaml", "r") as f:
+            m = re.search(r'deepseek:\s*\n\s+api_key:\s*(\S+)', f.read())
+        if m:
+            DEEPSEEK_API_KEY = m.group(1)
+            return DEEPSEEK_API_KEY
+    except Exception:
+        pass
+    DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+    return DEEPSEEK_API_KEY
 
 
 def log(msg: str, newline: bool = True):
@@ -41,7 +60,20 @@ def log(msg: str, newline: bool = True):
 
 
 def _llm(prompt: str, max_tokens: int = 500, temp: float = 0.4) -> str:
-    """Appel Gateway pour générer des prompts photo."""
+    """Appel LLM pour générer des prompts photo — DeepSeek direct si applicable."""
+    if "deepseek" in MODEL_LIGHT.lower():
+        api_key = _get_deepseek_key()
+        r = httpx.post(
+            DEEPSEEK_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": MODEL_LIGHT, "messages": [{"role": "user", "content": prompt}],
+                  "max_tokens": max_tokens, "temperature": temp},
+            timeout=TIMEOUT_LLM,
+        )
+        r.raise_for_status()
+        msg = r.json()["choices"][0]["message"]
+        content = msg.get("content", "") or msg.get("reasoning_content", " ")
+        return content.strip()
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={
@@ -101,28 +133,28 @@ def build_hero_prompt(article_es: str, title_es: str) -> str:
     lead_match = re.search(r'^#\s+.+\n+(.+?)(?=\n##|\Z)', article_es, re.MULTILINE | re.DOTALL)
     lead = lead_match.group(1).strip()[:500] if lead_match else ""
 
-    # Extraire le sujet principal (tous les titres H2 pour contexte)
-    h2_titles = re.findall(r'^##\s+(.+)$', article_es, re.MULTILINE)
-    themes = "; ".join(h2_titles[:5]) if h2_titles else title_es
-
     llm_prompt = f"""Eres un fotógrafo documental profesional. 
 Genera UN prompt de 60-80 palabras en INGLÉS para generar una FOTOGRAFÍA de PORTADA (hero image) para un artículo periodístico.
 
 TÍTULO DEL ARTÍCULO: {title_es}
 ENTRADA: {lead[:400]}
-TEMAS PRINCIPALES: {themes}
+
+⚠️ REGLA CRÍTICA ANTI-TEXTO:
+Describe SOLO la escena visual (paisaje, objetos, luz, composición).
+NO copies ni parafrasees el título ni el lead del artículo.
+PROHIBIDO nombres propios, topónimos y cualquier palabra que pueda renderizarse como texto. NO citar la entrada ni los temas.
 
 REGLAS ABSOLUTAS:
-- Describe EXACTAMENTE lo que se ve en la escena (sujeto, fondo, luz, composición)
-- Menciona un lugar real de Andalucía o la Costa Tropical de Granada
+- Describe la ESCENA VISUAL: sujeto, fondo, luz, colores, composición, atmósfera
 - Luz natural mediterránea, composición profesional, profundidad de campo
 - PROHIBIDO mencionar "National Geographic", "Getty", "Reuters" o cualquier marca
-- PROHIBIDO las palabras: logo, marca de agua, texto, ilustración, concepto
+- PROHIBIDO: logo, marca de agua, TEXT, letters, typography, caption, words, sign, banner
 - NO incluyas personas reconocibles o primeros planos de rostros
 - Estilo: fotoperiodismo documental, color natural, contrastado
 - Formato: UNA SOLA FRASE en inglés
 
-DEVUELVE SOLO el prompt en inglés. Sin comillas. Sin explicaciones."""
+RESPUESTA (solo el prompt visual, sin palabras del título ni del lead):
+"""
 
     prompt_en = _llm(llm_prompt, max_tokens=200, temp=0.4)
 
@@ -131,6 +163,11 @@ DEVUELVE SOLO el prompt en inglés. Sin comillas. Sin explicaciones."""
     # Virer les résidus de marque
     for banned in ["National Geographic", "Getty", "Reuters", "Magnum", "Leica"]:
         prompt_en = prompt_en.replace(banned, "documentary photography")
+
+    # Anti-texte renforcé : interdire explicitement tout rendu textuel en fin de prompt
+    prompt_en = prompt_en.rstrip(' .,')
+    if prompt_en and not any(t in prompt_en.lower() for t in ["no text", "no letters", "without text"]):
+        prompt_en = f"{prompt_en}, no text, no letters, no typography, no watermark"
 
     log(f"   Hero prompt: {prompt_en[:100]}...")
     return prompt_en
@@ -146,29 +183,40 @@ def build_section_prompt(h2_title: str, section_text: str, index: int) -> str:
     section_clean = re.sub(r'!\[.*?\]\(.*?\)', '', section_clean)
 
     llm_prompt = f"""Eres un fotógrafo documental profesional.
-Genera UN prompt de 50-70 palabras en INGLÉS para una FOTOGRAFÍA que ilustra ESTA sección específica de un artículo.
+Genera UN prompt de 45-60 palabras en INGLÉS para UNA FOTOGRAFÍA que ilustra ESTA sección.
 
 TÍTULO DE LA SECCIÓN: {h2_title}
 CONTENIDO DEL PÁRRAFO: {section_clean[:400]}
 
+⚠️ REGLA CRÍTICA ANTI-TEXTO:
+El prompt describe SOLO lo que se VE en la imagen: escena, objetos, materiales, luz, entorno.
+NO copies ni parafrasees el título ni el texto del artículo.
+NO uses frases literales del TÍTULO o del PÁRRAFO como contenido descriptivo.
+El prompt final NO debe contener ninguna palabra en español ni ninguna expresión que pueda renderizarse como texto/lugar/leyenda.
+
 REGLAS ABSOLUTAS:
-- La foto debe reflejar el CONTENIDO del párrafo, no solo el título
-- Describe EXACTAMENTE lo que se ve: sujeto concreto, entorno, luz, colores, composición
-- Menciona un lugar real de Andalucía o Costa Tropical de Granada si es relevante
+- Describe la ESCENA VISUAL concreta (materiales, herramientas, objetos en primer plano, fondo, luz, colores, composición)
 - PROHIBIDO mencionar "National Geographic", "Getty", "Reuters", "Magnum"
-- PROHIBIDO: logo, watermark, text, illustration, concept art
+- PROHIBIDO: logo, watermark, TEXT, letters, typography, caption, words, sign, banner, inscription
+- PROHIBIDO nombres propios, topónimos y frases — SOLO descripción visual
 - NO incluyas personas reconocibles — planos de detalle, paisajes, arquitectura, objetos
 - Estilo: fotoperiodismo documental, color natural, luz mediterránea
 - Formato: UNA SOLA FRASE en inglés
 
-DEVUELVE SOLO el prompt en inglés. Sin comillas. Sin explicaciones."""
+RESPUESTA (solo el prompt visual, sin palabras del título ni del texto):
+"""
 
-    prompt_en = _llm(llm_prompt, max_tokens=180, temp=0.5)
+    prompt_en = _llm(llm_prompt, max_tokens=180, temp=0.3)
 
     # Nettoyage
     prompt_en = prompt_en.strip().strip('"').strip("'")
     for banned in ["National Geographic", "Getty", "Reuters", "Magnum", "Leica"]:
         prompt_en = prompt_en.replace(banned, "documentary photography")
+
+    # Anti-texte renforcé : interdire explicitement tout rendu textuel en fin de prompt
+    prompt_en = prompt_en.rstrip(' .,')
+    if prompt_en and not any(t in prompt_en.lower() for t in ["no text", "no letters", "without text"]):
+        prompt_en = f"{prompt_en}, no text, no letters, no typography, no watermark"
 
     return prompt_en
 
@@ -275,6 +323,8 @@ def inject_markers(article_text: str, gallery: list[dict]) -> str:
     """
     Injecte les marqueurs [[PHOTO:N]] dans l'article.
     Ordre: hero avant le premier H2, images section après chaque H2.
+    Format IMPÉRATIF: [[PHOTO:N]] — la PWA (ArticleClient.tsx) ne rend QUE ce format,
+    résolu via gallery_images. Le HTML <figure> brut N'EST PAS rendu en image.
     """
     lines = article_text.split('\n')
     result = []
@@ -287,8 +337,7 @@ def inject_markers(article_text: str, gallery: list[dict]) -> str:
         # Hero: avant le premier H2
         if not used_hero and stripped.startswith('## '):
             if img_idx < len(gallery):
-                caption_text = gallery[img_idx].get("caption", "Illustration documentaire Costa Tropical")
-                result.append(f'<figure class="cct-article-image"><img src="{gallery[img_idx]["url"]}" alt="{caption_text}" loading="lazy" /><figcaption>{caption_text}</figcaption></figure>')
+                result.append(f'[[PHOTO:{img_idx}]]')
                 result.append("")
                 img_idx += 1
                 used_hero = True
@@ -299,8 +348,7 @@ def inject_markers(article_text: str, gallery: list[dict]) -> str:
         if stripped.startswith('## ') and used_hero:
             if img_idx < len(gallery):
                 result.append("")
-                caption_text = gallery[img_idx].get("caption", "Illustration documentaire Costa Tropical")
-                result.append(f'<figure class="cct-article-image"><img src="{gallery[img_idx]["url"]}" alt="{caption_text}" loading="lazy" /><figcaption>{caption_text}</figcaption></figure>')
+                result.append(f'[[PHOTO:{img_idx}]]')
                 img_idx += 1
 
     return '\n'.join(result)

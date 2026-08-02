@@ -16,8 +16,27 @@ import httpx
 from pipeline_cache import load_step, save_step
 
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-MODEL = "deepseek-v4-flash"
+DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
+MODEL = "deepseek-chat"  # V4 Flash sans thinking
 TIMEOUT = 120
+
+DEEPSEEK_API_KEY = None
+
+def _get_deepseek_key() -> str:
+    global DEEPSEEK_API_KEY
+    if DEEPSEEK_API_KEY:
+        return DEEPSEEK_API_KEY
+    try:
+        import re
+        with open("/root/.hermes/config.yaml", "r") as f:
+            m = re.search(r'deepseek:\s*\n\s+api_key:\s*(\S+)', f.read())
+        if m:
+            DEEPSEEK_API_KEY = m.group(1)
+            return DEEPSEEK_API_KEY
+    except Exception:
+        pass
+    DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+    return DEEPSEEK_API_KEY
 
 
 def log(msg: str, newline: bool = True):
@@ -29,6 +48,19 @@ def log(msg: str, newline: bool = True):
 
 
 def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
+    if "deepseek" in MODEL.lower():
+        api_key = _get_deepseek_key()
+        r = httpx.post(
+            DEEPSEEK_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
+                  "max_tokens": max_tokens, "temperature": temp},
+            timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        msg = r.json()["choices"][0]["message"]
+        content = msg.get("content", "") or msg.get("reasoning_content", " ")
+        return content.strip()
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],

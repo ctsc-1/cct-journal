@@ -25,7 +25,7 @@ import psycopg2
 
 # ─── CONFIG SURDIMENSIONNÉE ─────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-MODEL_LIGHT = "deepseek-v4-flash"    # Sondage, scoring, sélection
+MODEL_LIGHT = "deepseek-chat"    # Sondage, scoring (DeepSeek direct, fiable — pas Gemini/Gateway)
 MODEL_EMBED = "gemini-embedding-2"       # Embeddings via Gateway
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 
@@ -55,9 +55,53 @@ def log(msg: str, newline: bool = True):
         print(f"[{t}] {prefix} {msg}", end=" ", flush=True)
 
 
-# ─── GATEWAY ────────────────────────────────────────────────
+# ─── GATEWAY (avec fallback DeepSeek direct) ──────────────────
+DEEPSEEK_API_KEY = None
+
+def _get_deepseek_key() -> str:
+    """Charge la clé API DeepSeek depuis config.yaml (une seule fois)."""
+    global DEEPSEEK_API_KEY
+    if DEEPSEEK_API_KEY:
+        return DEEPSEEK_API_KEY
+    try:
+        import re
+        with open("/root/.hermes/config.yaml", "r") as f:
+            config = f.read()
+        m = re.search(r'deepseek:\s*\n\s+api_key:\s*(\S+)', config)
+        if m:
+            DEEPSEEK_API_KEY = m.group(1)
+            return DEEPSEEK_API_KEY
+    except Exception:
+        pass
+    # Fallback: depuis les variables d'environnement
+    DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+    return DEEPSEEK_API_KEY
+
+
 def _llm(prompt: str, model: str = MODEL_LIGHT, max_tokens: int = 4096,
          temp: float = 0.3, timeout: int = TIMEOUT_GATEWAY) -> str:
+    # Si modèle DeepSeek → appel direct (contourne Gateway qui est Gemini-only)
+    if "deepseek" in model.lower():
+        api_key = _get_deepseek_key()
+        r = httpx.post(
+            DEEPSEEK_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": temp,
+            },
+            timeout=timeout,
+        )
+        r.raise_for_status()
+        msg = r.json()["choices"][0]["message"]
+        content = msg.get("content", "")
+        # deepseek-v4-flash peut mettre la réponse dans reasoning_content (mode thinking)
+        if not content:
+            content = msg.get("reasoning_content", " ")
+        return content.strip()
+    # Sinon → Gateway (Gemini)
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={
@@ -260,9 +304,94 @@ NO expliques nada. Solo el JSON."""
 
 
 # ─── 0.4 ANTI-DOUBLON ───────────────────────────────────────
+# Noms de lieux de la Costa Tropical — NE doivent PAS déclencher de doublon seuls
+# (un lieu peut être décliné à l'infini : château, sucre, histoire, économie...)
+_PLACE_STOPWORDS = {
+    "almuñécar", "almunecar", "salobreña", "salobrena", "motril", "orgiva", "torvizcón",
+    "torvizcon", "vélez", "velez", "benaudalla", "los", "guájares", "guajares", "molvizar",
+    "ítrabo", "itrabo", "jete", "otívar", "otivar", "lújar", "lujar", "gualchos", "castell",
+    "ferro", "carchuna", "calahonda", "sorvilán", "sorvilan", "polopos", "rubite", "cádiar",
+    "cadiat", "cástaras", "castaras", "juviles", "lobras", "bérchules", "berchules",
+    "busquístar", "busquistar", "pórtugos", "portugos", "trévelez", "trevelez", "turón",
+    "turon", "válor", "valor", "ugíjar", "ugijar", "murtas", "albondón", "albondon",
+    "alpujarra", "maro", "cerro", "gordo", "sexitano", "almuñekar", "río", "rio", "verde",
+    "castell", "ferro", "melicena", "nejra", "la", "rax", "cerro", "gordo", "costa",
+    "granada", "andalucía", "andalucia", "españa", "espana", "sierra", "contraviesa",
+}
+
+
+def _extract_keywords(title: str) -> list[str]:
+    """Extrait les mots-clés thématiques d'un titre (mots > 4 lettres, HORS noms de lieux).
+    Les noms de lieux sont exclus : un lieu peut être décliné en plusieurs articles
+    (château, sucre, économie...) sans que ce soit un doublon."""
+    import re
+    stopwords = {"sobre", "para", "como", "entre", "desde", "hacia", "hasta",
+                 "durante", "según", "contra", "bajo", "ante", "tras", "pero",
+                 "costa", "tropical", "historia", "año", "parte", "nueva", "gran",
+                 "más", "del", "los", "las", "una", "que", "por", "con", "sus",
+                 "siglo", "secreto", "secreta", "guía", "guia", "ruta", "viaje",
+                 "tradición", "tradicion", "cultura", "pasado", "futuro", "pequeña",
+                 "pequena", "único", "unico", "especial"}
+    stopwords |= _PLACE_STOPWORDS
+    words = re.findall(r'[a-záéíóúñü]{4,}', title.lower())
+    seen, out = set(), []
+    for w in words:
+        if w not in stopwords and w not in seen:
+            seen.add(w)
+            out.append(w)
+        if len(out) >= 10:
+            break
+    return out
+
+
+def check_duplicates_thematic(topic_title: str, topic_context: str) -> bool:
+    """Vérifie les doublons thématiques par mots-clés sur TOUT l'historique.
+    Extrait les mots-clés du titre + contexte, cherche ≥2 matches dans les titres existants."""
+    log("   🔍 0.4a Anti-doublon thématique (full-text)...", newline=False)
+    try:
+        # Extraire du titre ET du contexte pour avoir plus de mots-clés
+        keywords = _extract_keywords(topic_title + " " + topic_context)
+        if len(keywords) < 2:
+            log("✅ OK (pas assez de mots-clés)")
+            return False
+
+        conn = psycopg2.connect(_get_db_url(), connect_timeout=TIMEOUT_SQL)
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT title_es, slug, published_at, content_es FROM articles "
+            "WHERE is_published = TRUE "
+            "ORDER BY published_at DESC",
+        )
+        all_articles = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        for title, slug, pub_date, content in all_articles:
+            if not title:
+                continue
+            title_lower = title.lower()
+            matches = [kw for kw in keywords if kw in title_lower]
+            if len(matches) >= 2:
+                log(f"⚠️ DOUBLON ({len(matches)} kw: {matches}): \"{title[:60]}\" ({pub_date.strftime('%d/%m/%Y') if pub_date else '?'})")
+                return True
+            # Aussi vérifier dans content_es si titre match partiel
+            if len(matches) == 1 and content:
+                content_lower = content[:5000].lower()
+                content_matches = [kw for kw in keywords if kw in content_lower]
+                if len(content_matches) >= 3:  # Plus strict: 3 kw dans le contenu
+                    log(f"⚠️ DOUBLON CONTENU ({len(content_matches)} kw): \"{title[:60]}\" ({pub_date.strftime('%d/%m/%Y') if pub_date else '?'})")
+                    return True
+
+        log("✅ OK")
+        return False
+    except Exception as e:
+        log(f"⚠️ Thématique HS (non bloquant): {e}")
+        return False
+
+
 def check_duplicates_sql(topic_title: str, category_id: str) -> bool:
     """Vérifie les doublons par titre (30j) et par catégorie (7j)."""
-    log("   🔍 0.4a Anti-doublon SQL (30 jours)...", newline=False)
+    log("   🔍 0.4b Anti-doublon SQL (30 jours)...", newline=False)
     try:
         conn = psycopg2.connect(_get_db_url(), connect_timeout=TIMEOUT_SQL)
         cur = conn.cursor()
@@ -397,12 +526,12 @@ def evaluate(category: dict, date_str: str) -> Optional[dict]:
 
     # 0.4: Anti-doublon
     log("🛡️ 0.4 ANTI-DOUBLON...")
+    is_dup_thematic = check_duplicates_thematic(topic["title"], topic["context"])
     is_dup_sql = check_duplicates_sql(topic["title"], topic["category_id"])
     is_dup_vec, max_sim = check_duplicates_vectoriel(topic["title"], topic["context"])
 
-    if is_dup_sql or is_dup_vec:
+    if is_dup_thematic or is_dup_sql or is_dup_vec:
         log("❌ DOUBLON DÉTECTÉ — sujet rejeté")
-        # Sauvegarder en cache le titre rejeté pour les retries
         return None
 
     elapsed = time.time() - start

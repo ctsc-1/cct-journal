@@ -32,8 +32,8 @@ GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-MODEL_HEAVY = "deepseek-v4-pro"       # Génération article ES (appels H2)
-MODEL_LIGHT = "deepseek-v4-flash"  # DeepSearch, planification, résumés
+MODEL_HEAVY = "deepseek-chat"       # Génération article ES (appels H2) — V4 Flash sans thinking
+MODEL_LIGHT = "deepseek-chat"  # DeepSearch, planification, résumés — V4 Flash sans thinking
 
 TIMEOUT_SECTION = 180  # Génération d'un H2 (900-1200 mots)
 TIMEOUT_LIGHT = 60
@@ -58,9 +58,51 @@ def log(msg: str, newline: bool = True):
         print(f"[{t}] {msg}", end=" ", flush=True)
 
 
-# ─── GATEWAY ────────────────────────────────────────────────
+# ─── GATEWAY (avec fallback DeepSeek direct) ──────────────────
+DEEPSEEK_API_KEY = None
+
+def _get_deepseek_key() -> str:
+    """Charge la clé API DeepSeek depuis config.yaml (une seule fois)."""
+    global DEEPSEEK_API_KEY
+    if DEEPSEEK_API_KEY:
+        return DEEPSEEK_API_KEY
+    try:
+        import re
+        with open("/root/.hermes/config.yaml", "r") as f:
+            config = f.read()
+        m = re.search(r'deepseek:\s*\n\s+api_key:\s*(\S+)', config)
+        if m:
+            DEEPSEEK_API_KEY = m.group(1)
+            return DEEPSEEK_API_KEY
+    except Exception:
+        pass
+    DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+    return DEEPSEEK_API_KEY
+
+
 def _llm(prompt: str, model: str = MODEL_LIGHT, max_tokens: int = 4096,
          temp: float = 0.3, timeout: int = 120) -> str:
+    # Si modèle DeepSeek → appel direct (contourne Gateway qui est Gemini-only)
+    if "deepseek" in model.lower():
+        api_key = _get_deepseek_key()
+        r = httpx.post(
+            DEEPSEEK_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": temp,
+            },
+            timeout=timeout,
+        )
+        r.raise_for_status()
+        msg = r.json()["choices"][0]["message"]
+        content = msg.get("content", "")
+        if not content:
+            content = msg.get("reasoning_content", " ")
+        return content.strip()
+    # Sinon → Gateway (Gemini)
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={
@@ -136,10 +178,12 @@ def deepsearch(topic: dict, date_str: str = DATE) -> str:
     title = topic["title"]
 
     query_prompt = (
-        f"Eres un documentalista. Genera 5-7 busquedas web para investigar: {title}\n"
+        f"Eres un documentalista. Genera 7-10 busquedas web para investigar: {title}\n"
         f"Dominio: {domain}\n{ANDALUSIA_CONSTRAINT}\n"
-        f"Formato: UNA busqueda por linea. Usa site:ideal.es, site:juntadeandalucia.es, "
-        f"etc. Incluye datos, cifras, nombres de lugares, fechas recientes (2025-2026)."
+        f"Formato: UNA busqueda por linea. Sin operadores site: — usa palabras clave naturales.\n"
+        f"Incluye datos, cifras, nombres de lugares, fechas recientes (2025-2026).\n"
+        f"Ej: Salobreña castillo nazarí historia 2025\n"
+        f"Variar los terminos: mezcla aspectos historicos, economicos, culturales, geograficos."
     )
     queries_raw = _llm(query_prompt, max_tokens=500, temp=0.3)
     queries = [q.strip() for q in queries_raw.splitlines() if q.strip() and len(q) > 10][:7]

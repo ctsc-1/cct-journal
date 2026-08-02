@@ -137,7 +137,7 @@ def run(category_id: str, topic_title: str, date_str: str = DATE) -> bool:
     log(f"📋 Catégorie: {category['name_es']} ({category['id']})")
 
     topic = None
-    max_retries = 2
+    max_retries = 12  # Essayer toutes les catégories du rotor avant d'abandonner
     for retry in range(max_retries):
         if retry > 0:
             # Essayer la catégorie suivante
