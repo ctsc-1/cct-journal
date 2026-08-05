@@ -25,7 +25,7 @@ import httpx
 # ─── CONFIG ─────────────────────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-MODEL_LIGHT = "deepseek-v4-pro"
+MODEL_LIGHT = "deepseek-v4-flash"  # Modèle officiel Marc (04/07/2026: JAMAIS deepseek-v4-pro) — non-pensée, content direct. Ne PAS utiliser deepseek-chat (déprécié 24/07/2026) ni deepseek-v4-pro (interdit)
 OUTPUT_DIR = Path("/srv/pwa/public/images/journal")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 DATE = datetime.now().strftime("%Y-%m-%d")
@@ -67,13 +67,19 @@ def _llm(prompt: str, max_tokens: int = 500, temp: float = 0.4) -> str:
             DEEPSEEK_URL,
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json={"model": MODEL_LIGHT, "messages": [{"role": "user", "content": prompt}],
-                  "max_tokens": max_tokens, "temperature": temp},
+                  "max_tokens": max_tokens, "temperature": temp,
+                  "reasoning_effort": "none"},  # ponytail: empêche DeepSeek d'entrer en mode thinking (04/08/2026)
             timeout=TIMEOUT_LLM,
         )
         r.raise_for_status()
         msg = r.json()["choices"][0]["message"]
-        content = msg.get("content", "") or msg.get("reasoning_content", " ")
-        return content.strip()
+        content = (msg.get("content") or "").strip()
+        # Correctif 03/08/2026 : NE JAMAIS fallback sur reasoning_content — le mode
+        # thinking re-cite la consigne (titre/paragraphe espagnol) qui, passée à FAL,
+        # fait dessiner le texte par FLUX. content vide => prompt générique.
+        if not content:
+            return "Documentary photograph of the Costa Tropical scene, natural Mediterranean light, no text, no letters"
+        return content
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={
@@ -108,9 +114,12 @@ def _generate_fal(prompt: str, filename: str, width: int = 1024, height: int = 5
         if saved_path:
             log(f"   ✅ {Path(saved_path).name}")
 
-            # Post-processing: PNG→WebP + GDrive
+            # Post-processing: WebP (déjà WebP via MCP FAL) — PAS d'upload GDrive.
+            # FAL/Replicate génèrent directement du WebP léger (mcp_fal_server.py
+            # écrit .webp q80), il n'y a aucun PNG lourd à sauvegarder. L'upload
+            # GDrive était inutile (rien de volumineux à archiver). Simplif.
             from image_postprocess import process_fal_output
-            webp_result = process_fal_output(Path(saved_path), upload_to_drive=True)
+            webp_result = process_fal_output(Path(saved_path), upload_to_drive=False)
             if webp_result:
                 return f"/images/journal/{webp_result.name}"
             else:
