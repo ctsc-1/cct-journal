@@ -61,6 +61,28 @@ DOMAIN_CATEGORY = {
 DEFAULT_CATEGORY = "c3d1056a-ccca-45e6-ac0a-42f2e30c8c2b"  # Enquêtes & Dossiers
 ALEJANDRO_AUTHOR = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
 
+# ─── Garde-fou anti-régression catégories (05/08/2026) ──────────────────────
+# Seules les catégories du rotor du silo "Le Journal" sont autorisées à la
+# publication. Une catégorie hors-liste (ex: "Revue de Presse" = b4c7c458,
+# réservée au pipeline alejandro-presse) ne doit JAMAIS être assignée à un
+# article du Journal. Cette liste blanche reflète rotor.CATEGORIES.
+ROTOR_CATEGORY_IDS = {
+    "8fc513c8-2222-4f7d-801b-f52506c4116c",  # communes-villages
+    "c3d1056a-ccca-45e6-ac0a-42f2e30c8c2b",  # enquetes-dossiers
+    "0cbf59b0-1012-47de-b91e-348600680d65",  # cultura-tradiciones
+    "047d7527-d161-4c25-a948-3e6f88aa8a9e",  # gastronomia-vino
+    "573075bf-2c0d-4b84-ba64-1a33107fd03d",  # geografia-naturaleza
+    "a0fd785c-50dd-4fad-aa42-ec20015f0e7e",  # actividades-aventura
+    "fa1f1b9d-d99b-46fc-861d-713aaf405489",  # turismo-ocio
+    "6e2d8a37-8f99-4fe8-995a-0499ef80f0ff",  # historia-patrimonio
+    "b2c1056a-bbba-45e6-ac0a-42f2e30c8c2b",  # diario-alejandro
+    "d4e1056a-ddda-45e6-ac0a-42f2e30c8c2b",  # terruno-agricultura
+    "e5f1056a-eeee-45e6-ac0a-42f2e30c8c2b",  # semanario-club
+    "8bcd5e72-3c04-4c32-af23-023a74b3a812",  # ia-andalucia
+}
+# Fallback si une catégorie hors-rotor est détectée (Enquêtes & Dossiers est dans le rotor)
+ROTOR_FALLBACK_CATEGORY = "c3d1056a-ccca-45e6-ac0a-42f2e30c8c2b"
+
 
 def _pg() -> psycopg2.connection:
     """Connexion à alejandro_db via DATABASE_URL (comme le RAG Engine)."""
@@ -318,6 +340,18 @@ def publish_trilingual(
 
     # Catégorie (priorité au category_id du topic, sinon mapping par domain)
     category_id = topic.get("category_id") or DOMAIN_CATEGORY.get(topic.get("domain", ""), DEFAULT_CATEGORY)
+
+    # Garde-fou anti-régression (05/08/2026) : seules les catégories du rotor
+    # du silo Le Journal sont autorisées. Une catégorie hors-liste (ex: Revue de
+    # Presse) est corrigée vers le fallback du rotor, pour que JAMAIS un article
+    # du Journal ne soit publié dans une catégorie d'un autre silo/pipeline.
+    if category_id not in ROTOR_CATEGORY_IDS:
+        logger.error(
+            f"⛔ Catégorie hors-rotor détectée pour '{topic.get('title', '?')}': "
+            f"{category_id} -> corrigée vers fallback rotor. Topic.category_id={topic.get('category_id')}, "
+            f"domain={topic.get('domain')}"
+        )
+        category_id = ROTOR_FALLBACK_CATEGORY
     
     # Meta SEO
     meta_title = f"{title_fr[:60]} | Club Costa Tropical"

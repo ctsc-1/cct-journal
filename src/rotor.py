@@ -120,13 +120,13 @@ CATEGORIES = [
         "tags": ["club", "semanal", "miembros", "comunidad"],
     },
     {
-        "id": "revista-prensa",
-        "category_id": "b4c7c458-0e7e-4528-97d2-8a744bf0398b",
-        "name_es": "Revista de Prensa",
-        "domain": "actualidad",
-        "description": "Revue de presse commentée de l'actualité de la Costa Tropical et de l'Andalousie.",
-        "angle": "Sélection éditorialisée des articles marquants de la semaine, avec analyse Alejandro.",
-        "tags": ["prensa", "actualidad", "revista"],
+        "id": "ia-andalucia",
+        "category_id": "8bcd5e72-3c04-4c32-af23-023a74b3a812",
+        "name_es": "La IA en Andalucía",
+        "domain": "tecnologia",
+        "description": "L'intelligence artificielle en Andalousie : innovation, entreprises tech, données, transformation numérique et métiers de demain dans la Costa Tropical.",
+        "angle": "Exploration de l'IA en Andalousie : initiatives, startups, applications concrètes, enjeux de données et avenir numérique de la région.",
+        "tags": ["ia", "tecnologia", "innovacion", "digitalizacion", "datos"],
     },
 ]
 
@@ -155,41 +155,44 @@ def _save_index(idx: int):
 
 
 def select_category(today: str | None = None, offset: int = 0) -> dict:
-    """Sélectionne la catégorie du jour par rotation.
+    """Sélectionne la catégorie par rotation sur les CATEGORIES.
 
     Args:
         today: Date YYYY-MM-DD (défaut: aujourd'hui)
-        offset: 0 = catégorie normale (incrémente le rotor)
-                1 = catégorie suivante (sans incrémenter — pour second article)
+        offset: 0 = catégorie normale (incrémente le rotor et sauvegarde)
+                1 = catégorie suivante (incrémente le rotor pour chaque retry)
 
     Returns:
         La catégorie choisie (dict avec id, name_es, domain, description, angle, tags, category_id)
+
+    Correctif 03/08/2026 : le paramètre `offset` était IGNORÉ dans le calcul,
+    donc offset=1 renvoyait toujours la même catégorie que offset=0. La boucle de
+    retry de run_pipeline.py (12 tentatives) restait bloquée sur une seule catégorie
+    -> "Aucune catégorie n'a produit de sujet viable" -> article jamais produit.
+    Désormais offset>0 incrémente réellement le rotor à chaque appel.
     """
     today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     last_idx = _load_index()
 
     if offset == 0:
-        # Slot A : incrémente et sauvegarde
-        if last_idx < 0 or last_idx >= len(CATEGORIES) - 1:
-            new_idx = 0
-        else:
-            new_idx = last_idx + 1
+        # Catégorie du jour : avance d'1 cran et SAUVEGARDE la progression.
+        new_idx = (last_idx + 1) % len(CATEGORIES)
         _save_index(new_idx)
+    else:
+        # Retry (offset = numéro d'itération de la boucle) : depuis l'index du jour
+        # (dernier sauvegardé), avance de `offset` crans SANS sauvegarder.
+        # run_pipeline.py passe offset=retry (1..11) -> couvre les 12 catégories
+        # une par une, sans doublon. Correctif 03/08/2026 : le code ignorait offset
+        # et restait bloqué sur une seule catégorie -> "Aucun sujet viable".
+        new_idx = (last_idx + offset) % len(CATEGORIES)
+
+    if offset == 0:
         logger.info(f"🎯 Catégorie du jour (A) [{new_idx + 1}/{len(CATEGORIES)}] : {CATEGORIES[new_idx]['name_es']}")
     else:
-        # Slot B : catégorie suivante sans sauvegarder
-        if last_idx < 0 or last_idx >= len(CATEGORIES) - 1:
-            new_idx = 0
-        else:
-            new_idx = last_idx + 1
-        # Incrémenter encore pour avoir la suivante
-        if new_idx >= len(CATEGORIES) - 1:
-            new_idx = 0
-        else:
-            new_idx = new_idx + 1
         logger.info(f"🎯 Catégorie du jour (B) [{new_idx + 1}/{len(CATEGORIES)}] : {CATEGORIES[new_idx]['name_es']}")
 
     return CATEGORIES[new_idx]
+
 
 
 def _get_recent_titles(limit: int = 7) -> list:
