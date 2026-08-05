@@ -32,11 +32,11 @@ GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-MODEL_HEAVY = "deepseek-chat"       # Génération article ES (appels H2) — V4 Flash sans thinking
-MODEL_LIGHT = "deepseek-chat"  # DeepSearch, planification, résumés — V4 Flash sans thinking
+MODEL_HEAVY = "deepseek-v4-flash"       # Génération article ES (appels H2) — RÈGLE MARC: JAMAIS deepseek-v4-pro, JAMAIS deepseek-chat (déprécié 24/07)
+MODEL_LIGHT = "deepseek-v4-flash"  # DeepSearch, planification, résumés
 
-TIMEOUT_SECTION = 180  # Génération d'un H2 (900-1200 mots)
-TIMEOUT_LIGHT = 60
+TIMEOUT_SECTION = 300  # Génération d'un H2 (900-1200 mots) — pas de contrainte de temps
+TIMEOUT_LIGHT = 120
 MIN_WORDS_H2 = 800
 MAX_WORDS_H2 = 1200
 MIN_H2_SECTIONS = 10
@@ -93,6 +93,7 @@ def _llm(prompt: str, model: str = MODEL_LIGHT, max_tokens: int = 4096,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": max_tokens,
                 "temperature": temp,
+                "reasoning_effort": "none",  # ponytail: désactive le mode thinking DeepSeek (04/08/2026)
             },
             timeout=timeout,
         )
@@ -117,8 +118,14 @@ def _llm(prompt: str, model: str = MODEL_LIGHT, max_tokens: int = 4096,
     return r.json()["choices"][0]["message"]["content"].strip()
 
 
-def _deepseek_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1) -> str:
-    """Appel DeepSeek V4 Flash pour FastCheck."""
+def _deepseek_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1,
+                   thinking: bool = True) -> str:
+    """Appel DeepSeek V4 Flash pour FastCheck.
+
+    thinking=True (défaut) : active le raisonnement DeepSeek. Le resultat final
+    est dans `content`, mais si vide le raisonnement est dans `reasoning_content`
+    (piège deepseek-hub-design). On lit content puis fallback reasoning_content.
+    """
     import subprocess
     try:
         r = subprocess.run(
@@ -132,11 +139,67 @@ def _deepseek_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1) -> st
     if not key:
         raise RuntimeError("Clé DeepSeek introuvable")
 
+    body = {
+        "model": "deepseek-v4-flash",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens,
+        "temperature": temp,
+    }
+    if not thinking:
+        # Ponytail: raisonnement coûteux inutile pour des tâches simples (04/08/2026)
+        body["reasoning_effort"] = "none"
+
     r = httpx.post(
         DEEPSEEK_URL,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        json=body,
+        timeout=120,
+    )
+    r.raise_for_status()
+    msg = r.json()["choices"][0]["message"]
+    content = msg.get("content", "")
+    if not content.strip():
+        content = msg.get("reasoning_content", " ")
+    return content.strip()
+
+
+# ─── OPENROUTER (Qwen thinking) ─────────────────────────────────
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+QWEN_THINKING_MODEL = "qwen/qwen-plus-2025-07-28:thinking"
+
+
+def _openrouter_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1) -> str:
+    """Appel Qwen Plus :thinking via OpenRouter (API directe).
+
+    Utilise la clé OpenRouter de config.yaml (jamais en dur). Le suffixe
+    `:thinking` active le mode raisonnement de Qwen ; la réponse finale est
+    dans `content` (OpenRouter ne pollue pas `content` avec le raisonnement).
+    """
+    import subprocess as _sp
+    key = os.environ.get("OPENROUTER_API_KEY", "")
+    if not key:
+        try:
+            r = _sp.run(
+                ["grep", "-rn", "sk-or-", "/root/.hermes/config.yaml"],
+                capture_output=True, text=True, timeout=5,
+            )
+            m = re.search(r"sk-or-(\S+)", r.stdout)
+            key = m.group(0) if m else ""
+        except Exception:
+            key = ""
+    if not key:
+        raise RuntimeError("Clé OpenRouter introuvable")
+
+    r = httpx.post(
+        OPENROUTER_URL,
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://clubcostatropical.es",
+            "X-Title": "CCT Journal FastCheck",
+        },
         json={
-            "model": "deepseek-v4-flash",
+            "model": QWEN_THINKING_MODEL,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
             "temperature": temp,
@@ -144,7 +207,8 @@ def _deepseek_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1) -> st
         timeout=120,
     )
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"].strip()
+    msg = r.json()["choices"][0]["message"]
+    return (msg.get("content", "") or "").strip()
 
 
 # ─── SEARXNG ────────────────────────────────────────────────
@@ -253,10 +317,42 @@ REGLAS:
 - PROHIBIDO: Rules, sequia, polemica politica."""
 
     raw = _llm(prompt, max_tokens=3000, temp=0.3, timeout=TIMEOUT_LIGHT)
-    match = re.search(r'\{.*\}', raw, re.DOTALL)
-    if match:
-        plan = json.loads(match.group(0))
-    else:
+    # Extraction JSON robuste — compteur d'accolades (ponytail: anti-regex-gourmande)
+    plan = None
+    json_start = raw.find('{')
+    if json_start >= 0:
+        depth = 0
+        json_end = json_start
+        for i, ch in enumerate(raw[json_start:], json_start):
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0:
+                    json_end = i + 1
+                    break
+        if json_end > json_start:
+            try:
+                plan = json.loads(raw[json_start:json_end])
+            except json.JSONDecodeError:
+                pass
+    # Fallback: si pas de JSON, extraire les H2 du texte brut (ponytail: résilience LLM)
+    if not plan:
+        import re as _re2
+        h2_matches = _re2.findall(r'^##\s+(.+?)$|^\*\*(.+?)\*\*$|^\d+\.\s+(.+?)$', raw, _re2.MULTILINE)
+        h2_titles = []
+        for m in h2_matches:
+            t = m[0] or m[1] or m[2]
+            if t and len(t) > 10:
+                h2_titles.append(t.strip())
+        if len(h2_titles) >= 3:
+            plan = {
+                "title": topic["title"],
+                "lead": context[:200] if context else "",
+                "h2s": [{"title": t, "context_specific": context[:300] if context else ""} for t in h2_titles[:MAX_H2_SECTIONS]]
+            }
+            log(f"   \u2705 {len(h2_titles)} H2 extraits du texte brut (fallback)")
+    if not plan:
         raise RuntimeError(f"Planification: JSON introuvable dans la réponse ({len(raw)} chars)")
 
     h2s = plan.get("h2s", [])
@@ -392,7 +488,7 @@ def _extract_factual_core(text: str) -> str:
 
 
 def fastcheck_es(article: str) -> tuple[bool, int, str]:
-    log("🔍 1d. FastCheck ES (DeepSeek + Gemini)")
+    log("🔍 1d. FastCheck ES (DeepSeek V4 thinking + Qwen Plus:thinking)")
     log("   V1: DeepSeek V4 Flash...", newline=False)
     v1_prompt = f"""Verificador de datos. Analiza este articulo periodistico (>10 000 palabras).
 Verifica: personas inventadas, cifras incoherentes, lugares falsos, escenas narrativas inventadas, 
@@ -405,7 +501,7 @@ ARTICULO:
 {article[:15000]}
 """
     try:
-        v1_raw = _deepseek_call(v1_prompt, max_tokens=1000, temp=0.1)
+        v1_raw = _deepseek_call(v1_prompt, max_tokens=1000, temp=0.1, thinking=True)
         v1_hallucs = [l for l in v1_raw.splitlines() if l.startswith("HALLUC|")]
         v1_score = max(0, 10 - min(10, len(v1_hallucs) * 2))
         log(f"{v1_score}/10 ({len(v1_hallucs)} problemes)")
@@ -413,7 +509,7 @@ ARTICULO:
         log(f"❌ DeepSeek HS: {e}")
         return False, 0, f"FastCheck V1 plante: {e}"
 
-    log("   V2: Gemini 3.5 Flash...", newline=False)
+    log("   V2: Qwen Plus :thinking (OpenRouter)...", newline=False)
     v2_prompt = f"""Editor conservador. Contra-verifica:
 - Contradicciones internas entre secciones?
 - Tono panfletario/acusador?
@@ -426,12 +522,12 @@ ARTICULO:
 {article[:15000]}
 """
     try:
-        v2_raw = _llm(v2_prompt, model=MODEL_LIGHT, max_tokens=1000, temp=0.1)
+        v2_raw = _openrouter_call(v2_prompt, max_tokens=1000, temp=0.1)
         v2_hallucs = [l for l in v2_raw.splitlines() if l.startswith("HALLUC|")]
         v2_score = max(0, 10 - min(10, len(v2_hallucs) * 2))
         log(f"{v2_score}/10 ({len(v2_hallucs)} problemes)")
     except Exception as e:
-        log(f"❌ Gemini HS: {e}")
+        log(f"❌ Qwen HS: {e}")
         return False, 0, f"FastCheck V2 plante: {e}"
 
     score = int((v1_score + v2_score) / 2)
