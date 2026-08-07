@@ -21,7 +21,7 @@ import psycopg2
 ART_ID = "b2f6cfb6-7719-418b-b580-4bae29455095"
 OUT = "/tmp/cache/journal-cache/act2_fr_REBUILD.json"
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-MODEL = "deepseek-chat"
+MODEL = "deepseek-v4-flash"
 
 def _key():
     try:

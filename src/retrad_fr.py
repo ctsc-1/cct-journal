@@ -13,7 +13,7 @@ import httpx
 
 ART_ID = "b2f6cfb6-7719-418b-b580-4bae29455095"
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-MODEL = "deepseek-chat"
+MODEL = "deepseek-v4-flash"
 
 def _get_deepseek_key():
     try:

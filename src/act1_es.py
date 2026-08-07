@@ -171,24 +171,30 @@ QWEN_THINKING_MODEL = "qwen/qwen-plus-2025-07-28:thinking"
 def _openrouter_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1) -> str:
     """Appel Qwen Plus :thinking via OpenRouter (API directe).
 
-    Utilise la clé OpenRouter de config.yaml (jamais en dur). Le suffixe
-    `:thinking` active le mode raisonnement de Qwen ; la réponse finale est
-    dans `content` (OpenRouter ne pollue pas `content` avec le raisonnement).
+    Isolation profils (07/08/2026 — Marc) : la clé OpenRouter est lue UNIQUEMENT
+    depuis le contexte du profil alejandro-journal.
+    1. Variable d'environnement OPENROUTER_API_KEY — injectée par systemd via
+       l'EnvironmentFile=/root/.hermes/profiles/alejandro-journal/.env.
+    2. Fallback : relecture du .env PROPRE du profil journal (source de vérité
+       interne), jamais d'un profil partagé ni du config root.
+    Le suffixe `:thinking` active le mode raisonnement de Qwen ; la réponse
+    finale est dans `content` (OpenRouter ne pollue pas `content` avec le
+    raisonnement).
     """
-    import subprocess as _sp
-    key = os.environ.get("OPENROUTER_API_KEY", "")
+    PROFILE_ENV = "/root/.hermes/profiles/alejandro-journal/.env"
+    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not key:
         try:
-            r = _sp.run(
-                ["grep", "-rn", "sk-or-", "/root/.hermes/config.yaml"],
-                capture_output=True, text=True, timeout=5,
-            )
-            m = re.search(r"sk-or-(\S+)", r.stdout)
-            key = m.group(0) if m else ""
+            for line in open(PROFILE_ENV):
+                if line.strip().startswith("OPENROUTER_API_KEY"):
+                    v = line.split("=", 1)[1].strip()
+                    if v:
+                        key = v
+                        break
         except Exception:
             key = ""
     if not key:
-        raise RuntimeError("Clé OpenRouter introuvable")
+        raise RuntimeError("Clé OpenRouter introuvable (profil alejandro-journal)")
 
     r = httpx.post(
         OPENROUTER_URL,
@@ -586,6 +592,7 @@ def run(topic: dict, date_str: str = DATE) -> bool:
 
     # 1d. FastCheck (avec retry)
     score = 0
+    original_article = article  # garde-fou anti-troncature de la correction ciblée
     for attempt in range(1, 4):
         passed, score, feedback = fastcheck_es(article)
         if passed:
@@ -594,9 +601,42 @@ def run(topic: dict, date_str: str = DATE) -> bool:
             log(f"❌ FastCheck échoué après 3 tentatives (score {score}/10)")
             return False
         if score >= 5:
-            log(f"   🔄 Correction ciblée (tentative {attempt+1})...")
-            fix_prompt = f"Corrige UNIQUEMENT ces problemes:\n{feedback}\n\nARTICULO:\n{article[:12000]}"
-            article = _llm(fix_prompt, model=MODEL_HEAVY, max_tokens=8192, temp=0.2, timeout=300)
+            log(f"   🔄 Correction ciblée par section (tentative {attempt+1})...")
+            # Règle anti-méta-discours (07/08/2026, bug n°1) : la 1-passe entière
+            # avec max_tokens=8192 tronquait l'article à 2 sections et injectait
+            # "He revisado el artículo..." dans le contenu publié. Correction :
+            # (a) ne JAMAIS renvoyer de préface/méta-texte, (b) traiter chaque H2
+            # séparément avec un budget suffisant, (c) garde-fou longueur finale.
+            fix_preamble = (
+                "Eres un corrector editorial. CORRIGE los errores indicados SIN redactar "
+                "prefacio ni introducción alguna. Devuelve SOLO el texto corregido, sin "
+                "\"He revisado\", sin \"A continuación\", sin meta-comentarios. Conserva "
+                "TODOS los encabezados H2 y su orden exactos. No añadas ni elimines secciones.\n"
+            )
+            corrected_sections = []
+            # Découper l'article en sections H2 pour corriger chaque bloc isolément
+            sections = re.split(r'(\n##\s+[^\n]+\n)', article)
+            for seg in sections:
+                if seg.startswith('\n## '):  # en-tête H2 → à conserver tel quel
+                    corrected_sections.append(seg)
+                    continue
+                body = seg.strip()
+                if len(body) < 200:  # lead très court / séparateur → conserver
+                    corrected_sections.append(seg)
+                    continue
+                if body:
+                    sp = (
+                        f"{fix_preamble}PROBLEMAS (solo aplica los relevantes a este fragmento):\n"
+                        f"{feedback}\n\nFRAGMENTO A CORREGIR:\n{body[:8000]}\n"
+                    )
+                    fixed = _llm(sp, model=MODEL_HEAVY, max_tokens=9000, temp=0.2, timeout=300)
+                    corrected_sections.append(f"\n{fixed.strip()}\n")
+            article = "".join(corrected_sections) if corrected_sections else article
+            # Garde-fou anti-troncature : si la correction a raccourci sous 10000 mots,
+            # revenir à l'original et laisser le verdict au re-fastcheck (ou rejeter).
+            if len(article.split()) < 10000:
+                log(f"   ⚠️ Correction ciblée a tronqué l'article ({len(article.split())} mots) — original conservé")
+                article = original_article
         else:
             log(f"❌ Score < 5/10 — article rejeté")
             return False

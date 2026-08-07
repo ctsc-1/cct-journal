@@ -18,9 +18,14 @@ from pathlib import Path
 # ─── CONFIG SURDIMENSIONNEE ──────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DB_URL = "postgresql://alejandro:AndaluciaRocks2025@127.0.0.1:5432/alejandro_db"
-OUTPUT_DIR = "/srv/pwa/public/images/journal"
+OUTPUT_DIR = "/srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL"
 DATE = datetime.now().strftime("%Y-%m-%d")
 AUTHOR_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+# Règle images (07/08/2026 — isolation profil journal) : URL publique servie
+# temps réel via le canal RAG /api/static/ (dossier DEPARTEMENT_ICONOGRAPHIE),
+# PAS via /images/ de la PWA (qui exigeait un rebuild Next à chaque article).
+def _pub(filename: str) -> str:
+    return f"/api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/{filename}"
 LIMIT_WORDS = 10000
 MAX_TOKENS = 32768
 TIMEOUT = 180
@@ -39,8 +44,8 @@ def log(msg, newline=True):
 def llm(prompt, max_tokens=MAX_TOKENS, temp=0.3, timeout=TIMEOUT, lightweight=False):
     """Appel Gateway avec max_tokens SURDIMENSIONNE.
     lightweight=True → deepseek-v4-flash (RPD illimité, DeepSearch/metadonnées/traductions).
-    lightweight=False → deepseek-v4-pro (article ES uniquement)."""
-    model = "deepseek-v4-flash" if lightweight else "deepseek-v4-pro"
+    RÈGLE MARC: JAMAIS deepseek-v4-pro (interdit) — toujours deepseek-v4-flash."""
+    model = "deepseek-v4-flash"  # RÈGLE MARC: JAMAIS deepseek-v4-pro
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={
@@ -77,7 +82,7 @@ def generate_image_fal(prompt, filename):
     path = f"{OUTPUT_DIR}/{filename}"
     if os.path.exists(path) and os.path.getsize(path) > 1000:
         log(f"  ⏩ Deja existant: {filename}")
-        return f"/images/journal/{filename}"
+        return _pub(f)
     
     try:
         # Appel direct a l'API FAL — la cle est dans la config Hermes
@@ -97,7 +102,7 @@ def generate_image_fal(prompt, filename):
             with open(path, "wb") as f:
                 f.write(img_r.content)
             log(f"  ✅ {os.path.getsize(path)} bytes -> {filename}")
-            return f"/images/journal/{filename}"
+            return _pub(filename)
     except Exception as e:
         log(f"  ⚠️ FAL error: {e}")
     return None
@@ -142,7 +147,7 @@ def run(category_id, topic_override=None, category_name="Gastronomía y Vino"):
     start = time.time()
     total_tokens = 0
     
-    # 1. DeepSearch SearXNG (deepseek-v4-pro)
+    # 1. DeepSearch SearXNG (deepseek-v4-flash)
     log("📡 1. DeepSearch Phase 1 (SearXNG + Flash Lite)")
     searches = [
         f"vino DO Granada Costa Tropical bodegas {DATE[:7]}",

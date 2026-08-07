@@ -1,7 +1,7 @@
 """
 narrative_planner.py — Planification narrative des images pour le Journal CCT.
 
-Un LLM (deepseek-v4-pro) analyse le texte de l'article section par section,
+Un LLM (deepseek-v4-flash) analyse le texte de l'article section par section,
 génère des prompts photo hyper-spécifiques dignes d'un photoreporter,
 et insère des marqueurs inviolables [[IMG:N]] dans le texte.
 
@@ -22,7 +22,7 @@ logger = logging.getLogger("cct-journal.narrative")
 # ─── Gateway ─────────────────────────────────────────────────────────────────
 GATEWAY_URL = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 from pipeline.model_env import get_model
-NARRATIVE_MODEL = get_model("NARRATIVE", "deepseek-v4-pro")
+NARRATIVE_MODEL = get_model("NARRATIVE", "deepseek-v4-flash")
 FALLBACK_MODEL = get_model("SYNTHESIS", "deepseek-v4-flash")
 
 # ─── Prompt système du directeur de la photo ────────────────────────────────

@@ -20,12 +20,12 @@ def _load_model(task: str, default: str) -> str:
 
 GEN_MODEL = _load_model("SYNTHESIS", "deepseek-v4-flash")
 TRANSLATION_MODEL = _load_model("TRANSLATION", "deepseek-v4-flash")
-QC_MODEL = _load_model("QC", "deepseek-v4-pro")
-FASTCHECK_MODEL = _load_model("FASTCHECK", "deepseek-v4-pro")
+QC_MODEL = _load_model("QC", "deepseek-v4-flash")      # RÈGLE MARC: JAMAIS deepseek-v4-pro
+FASTCHECK_MODEL = _load_model("FASTCHECK", "deepseek-v4-flash")
 CLASSIFY_MODEL = _load_model("CLASSIFY", "deepseek-v4-flash")
 ROTOR_MODEL = _load_model("ROTOR", "deepseek-v4-flash")
 HUMANIZE_MODEL = _load_model("HUMANIZE", "deepseek-v4-flash")
-NARRATIVE_MODEL = _load_model("NARRATIVE", "deepseek-v4-pro")
+NARRATIVE_MODEL = _load_model("NARRATIVE", "deepseek-v4-flash")  # RÈGLE MARC: JAMAIS deepseek-v4-pro
 EMBED_MODEL = _load_model("EMBEDDING", "text-embedding-002")
 
 # ─── PostgreSQL ─────────────────────────────────────────────────────────────

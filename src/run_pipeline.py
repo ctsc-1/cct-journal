@@ -31,7 +31,7 @@ def _pg_url() -> str:
     except Exception:
         return "postgresql:///alejandro_db"
 DB_URL = _pg_url()
-OUTPUT_DIR = "/srv/pwa/public/images/journal"
+OUTPUT_DIR = "/srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL"
 SITE = "https://clubcostatropical.es"
 AUTHOR_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
 DATE = datetime.now().strftime("%Y-%m-%d")
@@ -60,6 +60,12 @@ def insert_article(title_fr: str, title_es: str, title_en: str, slug: str,
     log("💾 Phase 5: Insertion DB")
     article_id = str(uuid.uuid4())
     now = datetime.now()
+
+    # Truncate des titres à 200 chars max (ponytail: contrainte DB)
+    title_fr = title_fr[:200] if len(title_fr) > 200 else title_fr
+    title_es = title_es[:200] if len(title_es) > 200 else title_es
+    title_en = title_en[:200] if len(title_en) > 200 else title_en
+    slug = slug[:200]
 
     try:
         conn = psycopg2.connect(DB_URL, connect_timeout=10)
@@ -105,11 +111,19 @@ def insert_article(title_fr: str, title_es: str, title_en: str, slug: str,
         else:
             log(f"   ⚠️ Local API {verify_r.status_code}")
 
-        # TRIGGER INSTANTANE ALEJANDRO-SEO-TRILINGUAL
+        # TRIGGER SEO IMMÉDIAT (isolé au profil journal — 07/08/2026)
+        # Ancienne version appelait le script d'un autre profil sous /root/.hermes
+        # (inaccessible en lecture pour cct-journal → Permission denied). On exécute
+        # désormais la copie locale src/seo_pipeline.py (outillage interne du profil).
         try:
-            log('[SEO] Declenchement instantane alejandro-seo-trilingual...')
-            import subprocess
-            subprocess.run(['python3', '/root/.hermes/profiles/alejandro-seo-trilingual/workspace/auto_process_new_articles.py'], check=False)
+            log('[SEO] Declenchement instantane seo_pipeline (local)...')
+            import subprocess, os
+            seo_env = dict(os.environ)
+            seo_env['DATABASE_URL'] = DB_URL
+            subprocess.run(
+                [sys.executable, os.path.join(os.path.dirname(__file__), 'seo_pipeline.py')],
+                env=seo_env, check=False, timeout=180,
+            )
         except Exception as seo_err:
             log(f'   [WARN] Instant SEO Trigger: {seo_err}')
 
@@ -140,8 +154,10 @@ def run(category_id: str, topic_title: str, date_str: str = DATE) -> bool:
     max_retries = 12  # Essayer toutes les catégories du rotor avant d'abandonner
     for retry in range(max_retries):
         if retry > 0:
-            # Essayer la catégorie suivante
-            category = select_category(offset=1)
+            # Essayer la catégorie suivante.
+            # offset=retry : avance de `retry` crans à chaque itération pour parcourir
+            # les 12 catégories du rotor sans jamais se répéter (correctif 03/08/2026).
+            category = select_category(offset=retry)
             log(f"🔄 Retry {retry}: catégorie {category['name_es']}")
 
         topic = phase0_evaluate(category, date_str)
@@ -245,6 +261,10 @@ def run(category_id: str, topic_title: str, date_str: str = DATE) -> bool:
     log(f"🌐 {SITE}/blog/{slug}")
     log(f"{'='*50}")
 
+    # Supprimé 07/08/2026 — les images du journal passent désormais par le canal
+    # /api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL servé temps réel par le RAG.
+    # Plus besoin de rebuild + restart PWA à chaque publication (l'ancien bloc échouait
+    # en EACCES sur /srv/pwa/.next/trace et retardait la mise en ligne).
     return ok
 
 

@@ -26,11 +26,21 @@ import httpx
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 MODEL_LIGHT = "deepseek-v4-flash"  # Modèle officiel Marc (04/07/2026: JAMAIS deepseek-v4-pro) — non-pensée, content direct. Ne PAS utiliser deepseek-chat (déprécié 24/07/2026) ni deepseek-v4-pro (interdit)
-OUTPUT_DIR = Path("/srv/pwa/public/images/journal")
+OUTPUT_DIR = Path("/srv/rag-engine/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 DATE = datetime.now().strftime("%Y-%m-%d")
 TIMEOUT_IMAGE = 120  # génération FAL
 TIMEOUT_LLM = 60     # génération de prompt
+
+# Règle images (07/08/2026 — isolation profil journal) : URL publique servie
+# temps réel via le canal RAG /api/static/ (DEPARTEMENT_ICONOGRAPHIE), PAS via
+# /images/ de la PWA (qui exigeait un rebuild Next + restart à chaque article).
+def _pub(filename: str) -> str:
+    return f"/api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/{filename}"
+def _pub_webp(r) -> str:
+    return f"/api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/{r.name}"
+def _pub_path(p: Path) -> str:
+    return f"/api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL/{p.name}"
 
 DEEPSEEK_API_KEY = None
 
@@ -103,7 +113,7 @@ def _generate_fal(prompt: str, filename: str, width: int = 1024, height: int = 5
     path = OUTPUT_DIR / filename
     if path.exists() and path.stat().st_size > 1000:
         log(f"   ⏩ Déjà existant: {filename}")
-        return f"/images/journal/{filename}"
+        return _pub(f)
 
     output_base = str(path.with_suffix(""))
     try:
@@ -121,9 +131,9 @@ def _generate_fal(prompt: str, filename: str, width: int = 1024, height: int = 5
             from image_postprocess import process_fal_output
             webp_result = process_fal_output(Path(saved_path), upload_to_drive=False)
             if webp_result:
-                return f"/images/journal/{webp_result.name}"
+                return _pub_webp(webp_result)
             else:
-                return f"/images/journal/{Path(saved_path).name}"
+                return _pub_path(Path(saved_path))
     except Exception as e:
         log(f"   ⚠️ FAL error: {e}")
     return None

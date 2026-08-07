@@ -25,23 +25,24 @@ import psycopg2
 
 # ─── CONFIG SURDIMENSIONNÉE ─────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
-MODEL_LIGHT = "deepseek-chat"    # Sondage, scoring (DeepSeek direct, fiable — pas Gemini/Gateway)
-MODEL_EMBED = "gemini-embedding-2"       # Embeddings via Gateway
+MODEL_LIGHT = "deepseek-v4-flash"    # Sondage, scoring (DeepSeek direct, fiable — pas Gemini/Gateway)
+MODEL_PRO = "deepseek-v4-pro"        # Tâches de jugement éditorial : sondage, sélection, QC
+MODEL_EMBED = "gemini-embedding-2-preview"       # Embeddings via Gateway (aligné sur gemini_direct.EMBEDDING_MODEL)
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 
-# Timeouts surdimensionnés
-TIMEOUT_SONDAGE = 45       # 0.1: 3 candidats, Flash Lite
-TIMEOUT_SCORE = 30          # 0.2: scoring unitaire, Flash Lite
-TIMEOUT_SELECT = 45         # 0.3: génération sujet, Flash Lite
-TIMEOUT_SQL = 10            # 0.4a-b: SQL anti-doublon
-TIMEOUT_EMBED = 15          # 0.4c: génération embedding
-TIMEOUT_GATEWAY = 120       # fallback général
+# Timeouts surdimensionnés — production NG, pas de contrainte de temps
+TIMEOUT_SONDAGE = 120       # 0.1: 3 candidats, DeepSeek V4 Pro (qualité > vitesse)
+TIMEOUT_SCORE = 45           # 0.2: scoring unitaire
+TIMEOUT_SELECT = 90          # 0.3: génération sujet, DeepSeek V4 Pro
+TIMEOUT_SQL = 15             # 0.4a-b: SQL anti-doublon
+TIMEOUT_EMBED = 30           # 0.4c: génération embedding
+TIMEOUT_GATEWAY = 180        # fallback général
 
 # Anti-doublon
 SIMILARITY_THRESHOLD = 0.85  # cosine > 0.85 → doublon
 DAYS_HISTORY = 30
 DAYS_CATEGORY_COOLDOWN = 7
-MIN_CANDIDATE_SCORE = 7.0   # score minimum pour être viable
+MIN_CANDIDATE_SCORE = 5.0   # score minimum pour être viable — abaissé (ponytail: trop de rejets)
 MAX_CATEGORY_RETRIES = 2    # nombre de catégories à essayer avant abandon
 
 
@@ -91,13 +92,14 @@ def _llm(prompt: str, model: str = MODEL_LIGHT, max_tokens: int = 4096,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": max_tokens,
                 "temperature": temp,
+                "reasoning_effort": "none",  # ponytail: désactive le mode thinking DeepSeek (04/08/2026)
             },
             timeout=timeout,
         )
         r.raise_for_status()
         msg = r.json()["choices"][0]["message"]
         content = msg.get("content", "")
-        # deepseek-v4-flash peut mettre la réponse dans reasoning_content (mode thinking)
+        # fallback raisonnement si content vide (ancien comportement)
         if not content:
             content = msg.get("reasoning_content", " ")
         return content.strip()
@@ -174,8 +176,14 @@ NO expliques nada. Solo el JSON array."""
         match = re.search(r'\[.*\]', raw, re.DOTALL)
         if match:
             candidates = json.loads(match.group(0))
-            log(f"   ✅ {len(candidates)} candidats générés")
-            return candidates[:3]
+            # VALIDATION: chaque candidat doit être un dict avec 'title' (ponytail: anti-str-hallucination)
+            validated = [c for c in candidates if isinstance(c, dict) and 'title' in c]
+            if validated:
+                log(f"   ✅ {len(validated)} candidats générés")
+                return validated[:3]
+            else:
+                bad_types = set(type(c).__name__ for c in candidates)
+                log(f"   ⚠️ {len(candidates)} éléments tous invalides (types: {bad_types}) — fallback")
     except Exception as e:
         log(f"   ⚠️ Sondage échoué: {e}")
 
@@ -191,6 +199,10 @@ NO expliques nada. Solo el JSON array."""
 # ─── 0.2 SCORING ────────────────────────────────────────────
 def score_candidate(candidate: dict, category: dict) -> float:
     """Évalue le potentiel de recherche d'un candidat. Score /10."""
+    # ponytail: validation défensive anti-str-hallucination
+    if not isinstance(candidate, dict):
+        log(f"      ⚠️ Candidat type {type(candidate).__name__} (non-dict) — score 0")
+        return 0.0
     title = candidate.get("title", "")
     context = candidate.get("context", "")
 
@@ -201,21 +213,34 @@ TEMA: {title}
 CONTEXTO: {context}
 CATEGORÍA: {category['name_es']}
 
-Evalúa en 5 criterios (responde SOLO el score, una línea por criterio):
+Evalúa en 5 criterios. CADA criterio tiene un máximo (0-X):
 
-1. FUENTES WEB PROBABLES (0-3): ¿Hay suficientes fuentes andaluzas online para investigar?
-2. DATOS CUANTITATIVOS (0-2): ¿Se pueden obtener cifras, estadísticas, precios?
-3. ACTUALIDAD (0-2): ¿Es un tema de actualidad en 2026? ¿Interesa ahora?
-4. PROFUNDIDAD (0-2): ¿Se puede desarrollar en 10 secciones H2 con contenido único cada una?
-5. DEBATE/CONTROVERSIA (0-1): ¿Hay ángulos controvertidos o debates sociales?
+1. FUENTES WEB PROBABLES (máx 3): ¿Hay suficientes fuentes andaluzas online?
+2. DATOS CUANTITATIVOS (máx 2): ¿Se pueden obtener cifras, estadísticas, precios?
+3. ACTUALIDAD (máx 2): ¿Es un tema de actualidad en 2026?
+4. PROFUNDIDAD (máx 2): ¿Se puede desarrollar en 10 secciones H2 con contenido único?
+5. DEBATE/CONTROVERSIA (máx 1): ¿Hay ángulos controvertidos?
 
-SCORE TOTAL (suma de los 5, máximo 10):"""
+Responde SOLO números, una línea por criterio, respetando los máximos:
+FUENTES: X (entre 0-3)
+DATOS: X (entre 0-2)
+ACTUALIDAD: X (entre 0-2)
+PROFUNDIDAD: X (entre 0-2)
+DEBATE: X (entre 0-1)
+TOTAL: X (la SUMA de los 5, entre 0-10)
+
+Ejemplo: FUENTES: 2\nDATOS: 2\nACTUALIDAD: 1\nPROFUNDIDAD: 2\nDEBATE: 1\nTOTAL: 8
+Solo números, nada de texto."""
 
     try:
         raw = _llm(prompt, max_tokens=200, temp=0.1, timeout=TIMEOUT_SCORE)
-        # Extraire tous les nombres et prendre le dernier (score total)
-        numbers = re.findall(r'(\d+(?:\.\d+)?)', raw)
-        score = float(numbers[-1]) if numbers else 5.0
+        # Score = nombre après TOTAL (ponytail: anti-mauvais-nombre — prendre le total explicite)
+        m_total = re.search(r'TOTAL:\s*\*?\*?(\d+(?:\.\d+)?)', raw, re.IGNORECASE)
+        if m_total:
+            score = float(m_total.group(1))
+        else:
+            numbers = re.findall(r'(\d+(?:\.\d+)?)', raw)
+            score = float(numbers[-1]) if numbers else 5.0
         score = min(10.0, max(0.0, score))
         log(f"      Score: {score:.1f}/10 — {title[:60]}")
         return score
@@ -230,8 +255,12 @@ def select_best_topic(candidates: list[dict], scores: list[float],
     """Sélectionne le meilleur candidat et génère le sujet complet."""
     log("🎯 0.3 SÉLECTION — Choix du meilleur candidat...")
 
-    # Trier par score décroissant
-    ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
+    # ponytail: validation défensive anti-str-hallucination
+    valid = [(c, s) for c, s in zip(candidates, scores) if isinstance(c, dict)]
+    if not valid:
+        log("   ❌ Aucun candidat valide (tous non-dict)")
+        return None
+    ranked = sorted(valid, key=lambda x: x[1], reverse=True)
     best_candidate, best_score = ranked[0]
 
     if best_score < MIN_CANDIDATE_SCORE:
@@ -272,9 +301,26 @@ NO expliques nada. Solo el JSON."""
 
     try:
         raw = _llm(prompt, max_tokens=1000, temp=0.3, timeout=TIMEOUT_SELECT)
-        match = re.search(r'\{.*\}', raw, re.DOTALL)
-        if match:
-            topic_data = json.loads(match.group(0))
+        # Extraction JSON robuste — compteur d'accolades (ponytail: anti-regex-gourmande)
+        topic_data = None
+        json_start = raw.find('{')
+        if json_start >= 0:
+            depth = 0
+            json_end = json_start
+            for i, ch in enumerate(raw[json_start:], json_start):
+                if ch == '{':
+                    depth += 1
+                elif ch == '}':
+                    depth -= 1
+                    if depth == 0:
+                        json_end = i + 1
+                        break
+            if json_end > json_start:
+                try:
+                    topic_data = json.loads(raw[json_start:json_end])
+                except json.JSONDecodeError:
+                    pass
+        if topic_data:
             topic = {
                 "id": f"{category['id']}-{date_str}",
                 "domain": category["domain"],

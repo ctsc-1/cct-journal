@@ -17,7 +17,7 @@ from pipeline_cache import load_step, save_step
 
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-MODEL = "deepseek-chat"  # V4 Flash sans thinking
+MODEL = "deepseek-v4-flash"  # RÈGLE MARC: JAMAIS deepseek-v4-pro, JAMAIS deepseek-chat (déprécié 24/07)
 TIMEOUT = 120
 
 DEEPSEEK_API_KEY = None
@@ -54,13 +54,17 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
             DEEPSEEK_URL,
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
-                  "max_tokens": max_tokens, "temperature": temp},
+                  "max_tokens": max_tokens, "temperature": temp,
+                  "reasoning_effort": "none"},  # ponytail: désactive mode thinking DeepSeek
             timeout=TIMEOUT,
         )
         r.raise_for_status()
         msg = r.json()["choices"][0]["message"]
-        content = msg.get("content", "") or msg.get("reasoning_content", " ")
-        return content.strip()
+        content = msg.get("content", "").strip()
+        # NE PAS prendre reasoning_content (blabla interne, pas une traduction). Si vide -> signaler
+        if not content:
+            return "[ERREUR_TRADUCTION: reponse vide]"
+        return content
     r = httpx.post(
         f"{GATEWAY}/v1/chat/completions",
         json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
