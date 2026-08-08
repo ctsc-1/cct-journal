@@ -261,6 +261,22 @@ def run(category_id: str, topic_title: str, date_str: str = DATE) -> bool:
     log(f"🌐 {SITE}/blog/{slug}")
     log(f"{'='*50}")
 
+    # ── PODCAST AUDIO (fix 08/08/2026, alerte A1) ─────────────────────
+    # Re-branche la génération du podcast (script DeepSeek = fix + TTS Gateway).
+    # Fire-and-forget : en arrière-plan, ne retarde ni ne fait échouer la
+    # publication si le TTS plante. Reutilise podcast_background.py existant.
+    try:
+        import subprocess as _sp_journal
+        _podcast_proc = _sp_journal.Popen(
+            ["/srv/cct-journal/.venv/bin/python", "src/podcast_background.py", slug],
+            cwd="/srv/cct-journal",
+            stdout=_sp_journal.DEVNULL, stderr=_sp_journal.DEVNULL,
+            start_new_session=True,
+        )
+        log(f"🎙️ Podcast lancé en arrière-plan pour {slug} (PID {_podcast_proc.pid})")
+    except Exception as _pe:
+        log(f"⚠️ Podcast arrière-plan non lancé: {_pe}")
+
     # Supprimé 07/08/2026 — les images du journal passent désormais par le canal
     # /api/static/DEPARTEMENT_ICONOGRAPHIE/JOURNAL servé temps réel par le RAG.
     # Plus besoin de rebuild + restart PWA à chaque publication (l'ancien bloc échouait

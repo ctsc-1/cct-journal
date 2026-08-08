@@ -158,22 +158,111 @@ def _build_prompt(article_text: str, title: str, lang: str = "es") -> str:
     )
 
 
-def _generate_script(text: str, title: str, lang: str = "es") -> Optional[str]:
-    """Génère le script radio via Gateway LLM (gemini-2.5-flash, gratuit) dans la langue demandée."""
-    system_prompt = _get_system_prompt(lang)
-    user_prompt = _build_prompt(text, title, lang)
+def _deepseek_call(system: str, user: str, max_tokens: int = 2000,
+                   temperature: float = 0.7) -> Optional[str]:
+    """Appel DeepSeek V4 Flash direct (mécanique act1_es) — hors secret en dur."""
+    import re as _re
+    import subprocess as _sp
+    try:
+        _p = _sp.run(["grep", "-A3", "deepseek:", "/root/.hermes/config.yaml"],
+                     capture_output=True, text=True, timeout=5)
+        _m = _re.search(r"api_key:\s*(\S+)", _p.stdout)
+        key = _m.group(1) if _m else os.environ.get("DEEPSEEK_API_KEY", "")
+    except Exception:
+        key = os.environ.get("DEEPSEEK_API_KEY", "")
+    if not key:
+        logger.error("❌ Clé DeepSeek introuvable")
+        return None
     try:
         r = httpx.post(
-            f"{GATEWAY_URL}/v1/generate",
+            "https://api.deepseek.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
             json={
-                "model": get_model("TTS", "gemini-3.1-flash-tts-preview"),
-                "contents": f"{system_prompt}\n\n{user_prompt}",
-                "caller": "cct-journal-podcast",
+                "model": "deepseek-v4-flash",
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "reasoning_effort": "none",  # tâche simple, pas de thinking (piège 04/08)
             },
             timeout=120,
         )
         r.raise_for_status()
-        script = r.json().get("text", "").strip()
+        content = r.json()["choices"][0]["message"].get("content", "").strip()
+        return content if content else None
+    except Exception as e:
+        logger.error(f"❌ DeepSeek call error: {e}")
+        return None
+
+
+def _summarize_article(article_text: str, title: str, lang: str = "es") -> Optional[str]:
+    """Résumé vivant de l'article (~250 mots) pour servir de matière au podcast.
+
+    Approche Marc 08/08/2026 : l'article fait 10 000+ mots — narrer l'article entier
+    serait cher en TTS (non gratuit) et indigeste. À la place, ce résumé accrocheur,
+    qui donne envie de lire l'article complet, est l'entrée du script radio.
+    """
+    system = (
+        f"Eres Sofía, periodista del Club Costa Tropical. Redacta un RESUMEN VIVO "
+        f"de {250} palabras de este artículo para que un presentador de radio lo cuente "
+        f"con gancho. NO es la lectura del artículo: es un resumen cálido, con datos "
+        f"concretos, lugares reales, y un cierre que invite a leer el artículo completo. "
+        f"Frases cortas (<20 palabras), sin cifras en serie, con alma. Idioma: "
+        f"{'español' if lang=='es' else ('francés' if lang=='fr' else 'inglés')}. "
+        f"Sin encabezados ni markdown. Solo el texto del resumen."
+    )
+    text_input = article_text[:12000]  # matière suffisante pour résumer un article long
+    user = f"TÍTULO: {title}\n\nARTÍCULO:\n{text_input}\n\n---\nRedacta el resumen vivo de ~250 palabras."
+    summary = _deepseek_call(system, user, max_tokens=600, temperature=0.8)
+    if summary:
+        logger.info(f"📄 Résumé podcast {lang}: {len(summary)} chars")
+    return summary
+
+
+def _generate_script(text: str, title: str, lang: str = "es") -> Optional[str]:
+    """Génère le script radio via DeepSeek V4 Flash direct (règle texte = DeepSeek).
+
+    Fix 08/08/2026 (alerte A1): l'ancien code envoyait un modèle TTS
+    (get_model("TTS",...)) à l'endpoint texte {GATEWAY_URL}/v1/generate → 500
+    depuis la refonte Gateway ~14/07 → podcasts journal morts. La génération du
+    script est une tâche TEXTE → DeepSeek direct (mécanique act1_es.py).
+    """
+    system_prompt = _get_system_prompt(lang)
+    user_prompt = _build_prompt(text, title, lang)
+    try:
+        # Clé DeepSeek depuis config.yaml (mécanique act1_es) — pas de secret en dur
+        import re as _re
+        import subprocess as _sp
+        try:
+            _p = _sp.run(["grep", "-A3", "deepseek:", "/root/.hermes/config.yaml"],
+                         capture_output=True, text=True, timeout=5)
+            _m = _re.search(r"api_key:\s*(\S+)", _p.stdout)
+            key = _m.group(1) if _m else os.environ.get("DEEPSEEK_API_KEY", "")
+        except Exception:
+            key = os.environ.get("DEEPSEEK_API_KEY", "")
+        if not key:
+            logger.error("❌ Clé DeepSeek introuvable pour le script podcast")
+            return None
+
+        r = httpx.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": "deepseek-v4-flash",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "max_tokens": 2000,
+                "temperature": 0.7,
+                "reasoning_effort": "none",  # tâche simple, pas de thinking (piège 04/08)
+            },
+            timeout=120,
+        )
+        r.raise_for_status()
+        script = r.json()["choices"][0]["message"].get("content", "").strip()
         if script and len(script) > 50:
             logger.info(f"📝 Script podcast: {len(script)} chars ({len(script.split())} mots)")
             return script
@@ -261,8 +350,16 @@ def generate_article_podcast(article_text: str, title: str, slug: str,
         logger.warning(f"⚠️ Texte trop court ({len(article_text or '')}c) — podcast ignoré")
         return None
 
-    # 1. Générer le script radio dans la langue demandée
-    script = _generate_script(article_text, title, lang)
+    # 0. Résumé vivant (approche Marc 08/08) : l'article fait 10K+ mots, on ne narre
+    #    pas l'article entier (cher en TTS + indigeste). Le résumé accrocheur est la
+    #    matière du script → audio teaser court qui donne envie de lire l'article.
+    summary = _summarize_article(article_text, title, lang)
+    if not summary:
+        logger.warning("⚠️ Résumé non généré — podcast abandonné")
+        return None
+
+    # 1. Générer le script radio dans la langue demandée (depuis le résumé)
+    script = _generate_script(summary, title, lang)
     if not script:
         logger.warning("⚠️ Aucun script généré — podcast abandonné")
         return None
