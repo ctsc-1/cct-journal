@@ -625,26 +625,86 @@ ARTICULO:
 
 
 # ─── 1e. HUMANISATION ES ────────────────────────────────────
+def _chunk_paragraphs(text: str, max_chars: int = 2400) -> list:
+    """Découpe un texte en blocs de PARAGRAPHES COMPLETS, chacun <= max_chars.
+    Jamais de coupure en plein paragraphe : chaque bloc se termine sur une borne
+    de paragraphe (\\n\\n). Fix humanisation 09/08 : l'ancien `section[:3000]`
+    coupaient les sections >3000 car en plein paragraphe -> le LLM humanisait le
+    début et PERDAIT les faits de la fin -> hash factuel changeait -> rejet.
+    """
+    paras = [p for p in text.split("\n\n") if p.strip()]
+    chunks = []
+    cur = ""
+    for p in paras:
+        if len(cur) + len(p) + 2 <= max_chars or not cur:
+            cur = (cur + "\n\n" + p).strip()
+        else:
+            if cur:
+                chunks.append(cur)
+            cur = p
+    if cur.strip():
+        chunks.append(cur.strip())
+    return chunks
+
+
+def _clean_paragraph_balance(section: str) -> str:
+    """Eqilibre les paragraphes d'une section sans casser les faits : aplatit les
+    micro-blocs (<= un seul mot) et fusionne les paragraphes trop courts (< 2 phrases)
+    avec le suivant. On n'en fait PAS à l'excès pour ne pas tronquer (Ponytail)."""
+    paras = section.split("\n\n")
+    merged = []
+    for p in paras:
+        p = p.strip()
+        if not p:
+            continue
+        # paragraphe de moins de ~80 car : fusionner avec le précédent si possible
+        if merged and len(p) < 80 and len(merged[-1]) < 400:
+            merged[-1] = merged[-1] + " " + p
+        else:
+            merged.append(p)
+    return "\n\n".join(merged)
+
+
 def humanize_es(article: str) -> str:
     log("🖋️ 1e. Humanisation ES (Flash Lite)")
     hash_before = _extract_factual_core(article)
 
-    # Humaniser section par section (les articles de 10K mots sont trop longs d'un coup)
+    # Humaniser section par section ; chaque section est découpée en blocs de
+    # PARAGRAPHES COMPLETS pour ne jamais perdre de faits (fix troncature 09/08).
     sections = article.split("\n## ")
     humanized_sections = [sections[0]]  # H1 + lead
 
     for i, section in enumerate(sections[1:], 1):
-        prompt = f"""Editor de estilo. AJUSTA el ritmo y fluidez. NO cambies hechos.
-VARIA longitud de frases. MEJORA transiciones.
-ELIMINA: "sin duda", "cabe destacar", "es importante señalar", "en conclusion".
-MANTEN tono Alejandro Ortega: humano, preciso, ironia fina.
+        body = section  # titre H2 déjà séparé par le split, mais on garde le titre seul
+        if "\n" in section:
+            body = section.split("\n", 1)[1]
+        blocks = _chunk_paragraphs(body)
+        humanized_blocks = []
+        for bk in blocks:
+            if len(bk.split()) < 12:  # bloc trop court (titre ou listes) -> garder tel quel
+                humanized_blocks.append(bk)
+                continue
+            prompt = f"""Editor de estilo del Club Costa Tropical. AJUSTA el ritmo y fluidez de este bloque. NO cambies hechos ni cifras.
+VARIA longitud de frases. MEJORA transiciones. REDUCE parrafos de una sola frase y de mas de 300 caracteres (equilibra a 2-4 frases).
+ELIMINA: "sin duda", "cabe destacar", "es importante señalar", "en conclusión", "además".
+MANTEN tono Alejandro Ortega: humano, preciso, ironia fina, ritmo variado.
+Prohibido tablas markdown. Prohibido listas de datos.
 
 TEXTO:
-## {section[:3000]}
+{bk}
 """
-        result = _llm(prompt, max_tokens=4096, temp=0.3, timeout=TIMEOUT_LIGHT)
-        humanized_sections.append(result.replace("## ", ""))
-        time.sleep(1)
+            result = _llm(prompt, max_tokens=4096, temp=0.3, timeout=TIMEOUT_LIGHT)
+            humanized_blocks.append(result.strip())
+            time.sleep(1)
+        # réassembler le corps humanisé + équilibrer les paragraphes
+        new_body = "\n\n".join(humanized_blocks)
+        new_body = _clean_paragraph_balance(new_body)
+        # garder le titre H2 de la section
+        title_part = section.split("\n", 1)[0].strip() if "\n" in section else ""
+        if title_part:
+            humanized_sections.append(title_part + "\n\n" + new_body)
+        else:
+            humanized_sections.append(new_body)
 
     article_h = "\n## ".join(humanized_sections)
     hash_after = _extract_factual_core(article_h)
