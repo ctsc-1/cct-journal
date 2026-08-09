@@ -417,7 +417,9 @@ CONTEXTO GLOBAL DEL ARTICULO:
 
 {prev_context}
 REGLAS ABSOLUTAS:
-- OBLIGATOIRE: Inclus au moins UN TABLEAU MARKDOWN de donnees chiffrees comparatives dans cet article.
+- PROHIBIDO tablas markdown (|...|) y listas tipo "cuadro comparativo". Usa solo parrafos fluidos narrativos.
+- Parrafos EQUILIBRADOS: cada parrafo debe tener 2-4 frases y longitud homogenea (±30% de la media). Prohibido bloques de una sola frase o bloques de 300+ caracteres pegados.
+- Cuando menciones por PRIMERA VEZ a una persona, contextualiza su funcion: ej. "Arturo Bernal, consejero de Turismo de la Junta de Andalucia,". Nunca cites un nombre sin explicar quien es.
 - PROHIBIDO repetir conectores usados previamente (evita 'Por otro lado', 'En este sentido', 'Cabe destacar').
 - Escribe 900-1200 palabras SOLO para esta seccion (la seccion #{h2_index+1}).
 - Empieza DIRECTAMENTE con el contenido, NO repitas el titulo H2.
@@ -436,6 +438,61 @@ ESCRIBE AHORA el contenido de la seccion ## {h2_title}"""
     words = len(content.split())
     log(f"   [{h2_index+1}/{total_h2s}] {h2_title[:50]}... → {words} mots")
     return content
+
+
+def _clean_article(article: str) -> str:
+    """Filet de sécurité éditorial post-assemblage (09/08/2026).
+
+    Traite les défauts que le LLM laisse passer malgré le prompt :
+    1. Supprime les doublons de titres H2 contigus (une version tronquée suivie de la
+       version complète du même titre — garde la PLUS LONGUE).
+    2. Retire tout paragraphe qui semble tronqué : une phrase qui se termine sans
+       ponctuation terminale (coupée en pleine ligne par max_tokens/finish_reason).
+    3. Convertit/retire les tableaux markdown résiduels (|...|) en liste narrative.
+    """
+    # 1. Dédoublonnage des H2 contigus identiques (garder la plus longue occurrence)
+    sections = article.split("\n## ")
+    cleaned = [sections[0]]
+    for i in range(1, len(sections)):
+        cur = sections[i]
+        title = cur.split("\n", 1)[0].strip()
+        # si le titre est identique au titre de la section précédente, garder la plus longue
+        prev = sections[i - 1]
+        prev_title = prev.split("\n", 1)[0].strip()
+        if prev_title == title:
+            # remplacer la version précédente par la plus longue (ou conserver cu + supprimer)
+            cur_body = cur.split("\n", 1)[1] if "\n" in cur else ""
+            prev_body = prev.split("\n", 1)[1] if "\n" in prev else ""
+            if len(cur) >= len(prev):
+                cleaned[-1] = cur  # la section courante est la complète
+            # si la précédente était plus longue, on la garde et on skippe cur
+            continue
+        cleaned.append(cur)
+
+    # 2. Retirer les paragraphes tronqués (fin sans ponctuation terminale)
+    #    Ne touche PAS au dernier bloc si l'article se termine justement par un titre H2.
+    text = "\n## ".join(cleaned)
+    lines = text.split("\n")
+    out_lines = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # un paragraphe = accumulate les lignes non-vides jusqu'au prochain vide/##
+        if line.strip() and not line.strip().startswith("#") and is_truncated_line(line.strip()):
+            # phrase coupée → la retirer
+            i += 1
+            continue
+        out_lines.append(line)
+        i += 1
+    return "\n".join(out_lines)
+
+
+def is_truncated_line(line: str) -> bool:
+    """Un paragraphe est 'tronqué' s'il ne se termine pas par une ponctuation terminale
+    ET contient plus de 3 mots (évite de tuer des titres/accroches courtes légitimes)."""
+    if len(line.split()) < 4:
+        return False
+    return not re.search(r'[.!?:;…»"\']\s*$', line.strip())
 
 
 def generate_article_h2_by_h2(topic: dict, plan: dict, deepsearch_context: str) -> str:
@@ -476,6 +533,12 @@ def generate_article_h2_by_h2(topic: dict, plan: dict, deepsearch_context: str) 
     total_words = len(article.split())
     log(f"   ✅ Article assemblé: {total_words} mots, {len(generated_h2s)} sections")
 
+    # Filet de sécurité éditorial : dédoublonnage H2 + retrait des paragraphes tronqués
+    article = _clean_article(article)
+    after_words = len(article.split())
+    if after_words != total_words:
+        log(f"   🧹 Nettoyage éditorial: {total_words} → {after_words} mots (troncatures/doublons retirés)")
+
     # Nettoyer le cache de progression
     progress_path = Path("/tmp/cache/journal-cache/act1_h2s_progress.json")
     if progress_path.exists():
@@ -486,11 +549,29 @@ def generate_article_h2_by_h2(topic: dict, plan: dict, deepsearch_context: str) 
 
 # ─── 1d. FASTCHECK ES ───────────────────────────────────────
 def _extract_factual_core(text: str) -> str:
-    numbers = re.findall(r'\d+[\d\s.,%€]*\d*', text)
+    """Noyau factuel d'un texte pour le garde-fou d'humanisation.
+
+    Extrait les faits vérifiables (nombres, noms propres, dates) et calcule un hash
+    sur l'ENSEMBLE NON ORDONNÉ (multiset trié) plutôt que sur la séquence d'apparition.
+
+    Fix humanisation (09/08/2026) : l'ancienne version concaténait les faits DANS
+    L'ORDRE d'apparition, ET le regex nombre était trop gourmand (capturait '2025, '
+    avec les séparateurs suivants). Résultat : une simple reformulation légitime
+    (réordonner des mots, déplacer un nombre) changeait le hash → le garde-fou
+    rejetait l'humanisation ET retournait le texte brut brutal.
+
+    Correctifs : (1) les nombres sont extraits de façon CANONIQUE (valeur chiffrée,
+    sans les espaces/virgules environnement) via un regex propre ; (2) le hash porte
+    sur le MULTISET TRIÉ des faits, donc l'ordre de leur apparition n'importe plus.
+    Un vrai changement factuel (nombre supprimé/modifié, nom propre altéré) fait
+    toujours changer le hash.
+    """
+    numbers = [m.group(0).strip() for m in re.finditer(r'\d+(?:[.,]\d+)?\s*%?', text)]
     proper_nouns = re.findall(r'\b[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\b', text)
     dates = re.findall(r'\b\d{1,2}\s+de\s+\w+\s+(?:de\s+)?\d{4}\b', text)
-    core = " ".join(numbers + proper_nouns + dates)
-    return hashlib.md5(core.encode()).hexdigest()
+    # multiset trié (les faits comptent, PAS leur ordre d'apparition)
+    facts = sorted(numbers + proper_nouns + dates)
+    return hashlib.md5("\x1f".join(facts).encode()).hexdigest()
 
 
 def fastcheck_es(article: str) -> tuple[bool, int, str]:
