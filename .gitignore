@@ -6,3 +6,6 @@ venv/
 .venv/
 .DS_Store
 *.log
+profiles/*/sessions/
+profiles/*/logs/
+profiles/*/.env
