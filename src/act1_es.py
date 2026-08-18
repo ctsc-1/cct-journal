@@ -684,17 +684,29 @@ def humanize_es(article: str) -> str:
             if len(bk.split()) < 12:  # bloc trop court (titre ou listes) -> garder tel quel
                 humanized_blocks.append(bk)
                 continue
-            prompt = f"""Editor de estilo del Club Costa Tropical. AJUSTA el ritmo y fluidez de este bloque. NO cambies hechos ni cifras.
+            # Humaniser le bloc, puis GARDE-FOU PAR BLOC : si le LLM modifie des faits
+            # (hash factuel change), on retente une fois, sinon on garde L'ORIGINAL de
+            # ce bloc seul (les autres blocs restent humanisés). Fini le "tout ou rien".
+            bk_hash = _extract_factual_core(bk)
+            accepted = bk
+            prompt = f"""Editor de estilo del Club Costa Tropical. AJUSTA el ritmo y fluidez de este bloque. NO cambies hechos ni cifras ni nombres propios.
 VARIA longitud de frases. MEJORA transiciones. REDUCE parrafos de una sola frase y de mas de 300 caracteres (equilibra a 2-4 frases).
 ELIMINA: "sin duda", "cabe destacar", "es importante señalar", "en conclusión", "además".
 MANTEN tono Alejandro Ortega: humano, preciso, ironia fina, ritmo variado.
 Prohibido tablas markdown. Prohibido listas de datos.
+CONSERVA EXACTAMENTE todas las cifras y porcentajes del original.
 
 TEXTO:
 {bk}
 """
-            result = _llm(prompt, max_tokens=4096, temp=0.3, timeout=TIMEOUT_LIGHT)
-            humanized_blocks.append(result.strip())
+            for attempt in (0, 1):  # 2 tentatives max
+                result = _llm(prompt, max_tokens=4096, temp=0.3, timeout=TIMEOUT_LIGHT).strip()
+                if _extract_factual_core(result) == bk_hash:
+                    accepted = result  # humanisation préservant les faits
+                    break
+                # sinon réessayer avec consigne renforcée
+                prompt = prompt.replace("AJUSTA el ritmo y fluidez", "AJUSTA el ritmo y fluidez, PERO repite SIN NINGÚN CAMBIO cada número y cada nombre propio tal como está")
+            humanized_blocks.append(accepted)
             time.sleep(1)
         # réassembler le corps humanisé + équilibrer les paragraphes
         new_body = "\n\n".join(humanized_blocks)

@@ -14,6 +14,10 @@ from datetime import datetime
 import httpx
 
 from pipeline_cache import load_step, save_step
+from translation_cache import (
+    get_es, save_es, get_translation, save_translation,
+    set_verified, get_verified, save_meta, _compute_slug_from_title,
+)
 
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
@@ -87,6 +91,25 @@ def run() -> bool:
     title_es = es_data.get("title_es", "")
     log(f"   Article ES chargé: {len(article_es)} chars")
 
+    # Slug unique pour le cache persistant
+    slug = _compute_slug_from_title(title_es)
+    log(f"   Slug: {slug}")
+
+    # Sauvegarder l'ES dans le cache persistant si pas déjà fait
+    if not get_es(slug):
+        save_es(slug, article_es)
+        save_meta(slug, {
+            "created": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()),
+            "nb_sections": len(re.findall(r'^##\s+', article_es, re.MULTILINE)),
+            "modele_generation": "deepseek-v4-flash",
+            "modele_traduction": "deepseek-v4-flash",
+            "modele_verification": "deepseek-v4-pro",
+            "lang": "en",
+        })
+        log(f"   📦 ES sauvegardé dans cache persistant")
+    else:
+        log(f"   📦 ES déjà en cache, utilisation du cache disponible pour {slug}")
+
     # ── 1. Titre ──
     log("   1) Translating title...", newline=False)
     h1_match = re.search(r'^#\s+(.+)$', article_es, re.MULTILINE)
@@ -122,18 +145,39 @@ def run() -> bool:
         if h2_match:
             h2_name = h2_match.group(1)[:50]
 
+        # CACHE CHECK
+        cached = get_translation(slug, "en", i)
+        if cached is not None:
+            log(f"   [{i+1}/{len(sections)}] {h2_name}...📦 CACHE HIT", newline=False)
+            en_sections.append(cached)
+            log(f"{len(cached)}c")
+            continue
+
         log(f"   [{i+1}/{len(sections)}] {h2_name}...", newline=False)
-        try:
-            en = _llm(
-                f"Translate to English. Keep ## heading, ```tables```, images. "
-                f"Proper nouns unchanged.\n\n{section}",
-                max_tokens=8192, temp=0.3,
-            )
-            en_sections.append(en)
-            log(f"{len(en)}c")
-        except Exception as e:
-            log(f"❌ {e}")
-            en_sections.append(section)
+        en = None
+        for attempt in range(3):  # 3 tentatives (0, 1, 2) = max 3 appels
+            try:
+                en = _llm(
+                    f"Translate to English. Keep ## heading, ```tables```, images. "
+                    f"Proper nouns unchanged.\n\n{section}",
+                    max_tokens=8192, temp=0.3,
+                )
+                break  # Succès → sortir de la boucle
+            except Exception as e:
+                if attempt < 2:
+                    log(f"⚠️ retry {attempt+1}/2: {e}")
+                    time.sleep(10)  # Pause plus longue entre retries
+                else:
+                    log(f"❌ Failed after 3 attempts: {e}")
+                    en = "[SECTION NOT TRANSLATED]"
+        en_sections.append(en)
+        log(f"{len(en)}c" if en != "[SECTION NOT TRANSLATED]" else "⚠️ SECTION NOT TRANSLATED")
+
+        # SAUVEGARDE DANS LE CACHE PERSISTANT
+        if en != "[SECTION NOT TRANSLATED]":
+            save_translation(slug, "en", i, en)
+            save_meta(slug, {"section_en_cached": i, "lang": "en"})
+
         time.sleep(5)
 
     # ── Assemblage ──
