@@ -5,7 +5,7 @@ act1_es.py — Acte 1 v2: Article ES 10 000+ mots par génération H2 par H2.
 Pipeline:
   1a. DeepSearch → synthèse 2000 mots
   1b. PLANIFICATION → 12-15 H2 + contexte spécifique par H2
-  1c. GÉNÉRATION SÉQUENTIELLE — un appel Gemini 3.6 Flash par H2 (900-1200 mots)
+  1c. GÉNÉRATION SÉQUENTIELLE — un appel DeepSeek V4 Pro par H2 (900-1200 mots)
       Cohérence préservée via cache: résumé des H2 précédents en contexte
   1d. FASTCHECK ES — DeepSeek + Gemini cross-check sur l'article assemblé
   1e. HUMANISATION ES — nettoyage chirurgical, hash factuel
@@ -497,7 +497,7 @@ def is_truncated_line(line: str) -> bool:
 
 def generate_article_h2_by_h2(topic: dict, plan: dict, deepsearch_context: str) -> str:
     """Génère l'article complet H2 par H2, avec cache progressif."""
-    log("✍️ 1c. Génération H2 par H2 (Gemini 3.6 Flash)")
+    log("✍️ 1c. Génération H2 par H2 (DeepSeek V4 Pro)")
     plan_title = plan.get("title", topic["title"])
     lead = plan.get("lead", "")
     h2s = plan.get("h2s", [])

@@ -58,7 +58,7 @@ def select_topic_fallback():
                 DEEPSEEK_URL,
                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 json={
-                    "model": "deepseek-v4-pro",
+                    "model": "deepseek-v4-flash",
                     "messages": [{"role": "user", "content": f"""Choisis UNE catégorie d'article parmi cette liste pour le journal quotidien de la Costa Tropical aujourd'hui. 
 Réponds UNIQUEMENT avec l'ID de la catégorie, rien d'autre.
 
