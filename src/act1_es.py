@@ -32,8 +32,8 @@ GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-MODEL_HEAVY = "deepseek-v4-flash"       # Génération article ES (appels H2) — RÈGLE MARC: JAMAIS deepseek-v4-pro, JAMAIS deepseek-chat (déprécié 24/07)
-MODEL_LIGHT = "deepseek-v4-flash"  # DeepSearch, planification, résumés
+MODEL_HEAVY = "deepseek-v4-pro"       # Génération article ES (appels H2) — V4 Pro validé Marc 18/08 pour moins d'hallucinations
+MODEL_LIGHT = "deepseek-v4-flash"  # DeepSearch, planification, résumés — V4 Flash suffit
 
 TIMEOUT_SECTION = 300  # Génération d'un H2 (900-1200 mots) — pas de contrainte de temps
 TIMEOUT_LIGHT = 120
@@ -140,7 +140,7 @@ def _deepseek_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1,
         raise RuntimeError("Clé DeepSeek introuvable")
 
     body = {
-        "model": "deepseek-v4-flash",
+        "model": MODEL_HEAVY,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens,
         "temperature": temp,
