@@ -21,10 +21,30 @@ from translation_cache import (
 
 GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-MODEL = "deepseek-v4-flash"  # RÈGLE MARC: JAMAIS deepseek-v4-pro, JAMAIS deepseek-chat (déprécié 24/07)
+MODEL = "qwen/qwen3.7-plus"  # RÈGLE MARC 19/08/2026: Qwen 3.7 Plus via OpenRouter pour les traductions
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 TIMEOUT = 120
 
 DEEPSEEK_API_KEY = None
+OPENROUTER_API_KEY = None
+
+def _get_openrouter_key() -> str:
+    global OPENROUTER_API_KEY
+    if OPENROUTER_API_KEY:
+        return OPENROUTER_API_KEY
+    try:
+        import re
+        with open("/root/.hermes/profiles/alejandro-journal/.env", "r") as f:
+            for line in f:
+                if line.strip().startswith("OPENROUTER_API_KEY"):
+                    v = line.split("=", 1)[1].strip()
+                    if v:
+                        OPENROUTER_API_KEY = v
+                        return OPENROUTER_API_KEY
+    except Exception:
+        pass
+    OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+    return OPENROUTER_API_KEY
 
 def _get_deepseek_key() -> str:
     global DEEPSEEK_API_KEY
@@ -52,6 +72,41 @@ def log(msg: str, newline: bool = True):
 
 
 def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
+    if "qwen" in MODEL.lower():
+        # Qwen 3.7 Plus via OpenRouter (RÈGLE MARC 19/08/2026)
+        api_key = _get_openrouter_key()
+        if not api_key:
+            log("   ⚠️ Clé OpenRouter introuvable, fallback DeepSeek V4 Flash")
+            ds_key = _get_deepseek_key()
+            r = httpx.post(
+                DEEPSEEK_URL,
+                headers={"Authorization": f"Bearer {ds_key}", "Content-Type": "application/json"},
+                json={"model": "deepseek-v4-flash", "messages": [{"role": "user", "content": prompt}],
+                      "max_tokens": max_tokens, "temperature": temp,
+                      "reasoning_effort": "none"},
+                timeout=TIMEOUT,
+            )
+            r.raise_for_status()
+            msg = r.json()["choices"][0]["message"]
+            content = msg.get("content", "").strip()
+            if not content:
+                return "[ERREUR_TRADUCTION: reponse vide]"
+            return content
+        r = httpx.post(
+            OPENROUTER_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json",
+                      "HTTP-Referer": "https://clubcostatropical.es",
+                      "X-Title": "CCT Journal Traduction"},
+            json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
+                  "max_tokens": max_tokens, "temperature": temp},
+            timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        msg = r.json()["choices"][0]["message"]
+        content = msg.get("content", "").strip()
+        if not content:
+            return "[ERREUR_TRADUCTION: reponse vide]"
+        return content
     if "deepseek" in MODEL.lower():
         api_key = _get_deepseek_key()
         r = httpx.post(
@@ -59,13 +114,12 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
                   "max_tokens": max_tokens, "temperature": temp,
-                  "reasoning_effort": "none"},  # ponytail: désactive mode thinking DeepSeek
+                  "reasoning_effort": "none"},
             timeout=TIMEOUT,
         )
         r.raise_for_status()
         msg = r.json()["choices"][0]["message"]
         content = msg.get("content", "").strip()
-        # NE PAS prendre reasoning_content (blabla interne, pas une traduction). Si vide -> signaler
         if not content:
             return "[ERREUR_TRADUCTION: reponse vide]"
         return content
@@ -102,7 +156,7 @@ def run() -> bool:
             "created": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()),
             "nb_sections": len(re.findall(r'^##\s+', article_es, re.MULTILINE)),
             "modele_generation": "deepseek-v4-flash",
-            "modele_traduction": "deepseek-v4-flash",
+            "modele_traduction": "qwen-qwen3.7-plus",
             "modele_verification": "deepseek-v4-pro",
             "lang": "en",
         })
