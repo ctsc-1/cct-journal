@@ -88,7 +88,7 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
             )
             r.raise_for_status()
             msg = r.json()["choices"][0]["message"]
-            content = msg.get("content", "").strip()
+            content = (msg.get("content", "") or "").strip()
             if not content:
                 return "[ERREUR_TRADUCTION: reponse vide]"
             return content
@@ -103,7 +103,7 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
         )
         r.raise_for_status()
         msg = r.json()["choices"][0]["message"]
-        content = msg.get("content", "").strip()
+        content = (msg.get("content", "") or "").strip()
         if not content:
             return "[ERREUR_TRADUCTION: reponse vide]"
         return content
@@ -119,7 +119,7 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
         )
         r.raise_for_status()
         msg = r.json()["choices"][0]["message"]
-        content = msg.get("content", "").strip()
+        content = (msg.get("content", "") or "").strip()
         if not content:
             return "[ERREUR_TRADUCTION: reponse vide]"
         return content
@@ -136,7 +136,7 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
     )
     r.raise_for_status()
     msg = r.json()["choices"][0]["message"]
-    content = msg.get("content", "").strip()
+    content = (msg.get("content", "") or "").strip()
     if not content:
         return "[ERREUR_TRADUCTION: reponse vide]"
     return content

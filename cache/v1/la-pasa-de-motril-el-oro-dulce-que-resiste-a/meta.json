@@ -1,0 +1,7 @@
+{
+  "created": "2026-08-19T08:10:55",
+  "nb_sections": 14,
+  "modele_generation": "deepseek-v4-flash",
+  "modele_traduction": "deepseek-v4-flash",
+  "modele_verification": "deepseek-v4-pro"
+}
