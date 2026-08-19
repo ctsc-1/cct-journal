@@ -19,7 +19,7 @@ from translation_cache import (
     set_verified, get_verified, save_meta, _compute_slug_from_title,
 )
 
-GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
+GATEWAY = os.environ.get("GATEWAY_URL", "")  # Gateway Gemini désactivée pour ce profil (19/08/2026)
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 MODEL = "qwen/qwen3.7-plus"  # RÈGLE MARC 19/08/2026: Qwen 3.7 Plus via OpenRouter pour les traductions
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -77,7 +77,6 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
         api_key = _get_openrouter_key()
         if not api_key:
             log("   ⚠️ Clé OpenRouter introuvable, fallback DeepSeek V4 Flash")
-            # Fallback sur DeepSeek
             ds_key = _get_deepseek_key()
             r = httpx.post(
                 DEEPSEEK_URL,
@@ -124,14 +123,23 @@ def _llm(prompt: str, max_tokens: int = 4096, temp: float = 0.3) -> str:
         if not content:
             return "[ERREUR_TRADUCTION: reponse vide]"
         return content
+    # Gateway (Gemini) désactivée — fallback DeepSeek Flash
+    log("   ⚠️ Fallback Gateway non disponible, utilisation DeepSeek Flash")
+    ds_key = _get_deepseek_key()
     r = httpx.post(
-        f"{GATEWAY}/v1/chat/completions",
-        json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
-              "max_tokens": max_tokens, "temperature": temp},
+        DEEPSEEK_URL,
+        headers={"Authorization": f"Bearer {ds_key}", "Content-Type": "application/json"},
+        json={"model": "deepseek-v4-flash", "messages": [{"role": "user", "content": prompt}],
+              "max_tokens": max_tokens, "temperature": temp,
+              "reasoning_effort": "none"},
         timeout=TIMEOUT,
     )
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"].strip()
+    msg = r.json()["choices"][0]["message"]
+    content = msg.get("content", "").strip()
+    if not content:
+        return "[ERREUR_TRADUCTION: reponse vide]"
+    return content
 
 
 def run() -> bool:

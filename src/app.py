@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from run_pipeline import run as run_pipeline
 
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
+GATEWAY = os.environ.get("GATEWAY_URL", "")  # Gateway Gemini désactivée pour ce profil (19/08/2026)
 FALLBACK_CATEGORY_ID = "047d7527-d161-4c25-a948-3e6f88aa8a9e"  # Alpujarra
 FALLBACK_TOPIC = "Actualité de la Costa Tropical"
 

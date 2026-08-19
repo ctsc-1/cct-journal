@@ -28,7 +28,7 @@ import httpx
 from pipeline_cache import save_step, load_step
 
 # ─── CONFIG ─────────────────────────────────────────────────
-GATEWAY = os.environ.get("GATEWAY_URL", "http://127.0.0.1:4000")
+GATEWAY = os.environ.get("GATEWAY_URL", "")  # Gateway Gemini désactivée pour ce profil (19/08/2026)
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 DATE = datetime.now().strftime("%Y-%m-%d")
 
@@ -103,19 +103,23 @@ def _llm(prompt: str, model: str = MODEL_LIGHT, max_tokens: int = 4096,
         if not content:
             content = msg.get("reasoning_content", " ")
         return content.strip()
-    # Sinon → Gateway (Gemini)
+    # Gateway (Gemini) désactivée pour ce profil — fallback non disponible
+    log("   ⚠️ Aucun appel Gateway configuré pour ce profil, fallback DeepSeek Flash")
+    ds_key = _get_deepseek_key()
     r = httpx.post(
-        f"{GATEWAY}/v1/chat/completions",
-        json={
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens,
-            "temperature": temp,
-        },
+        DEEPSEEK_URL,
+        headers={"Authorization": f"Bearer {ds_key}", "Content-Type": "application/json"},
+        json={"model": "deepseek-v4-flash", "messages": [{"role": "user", "content": prompt}],
+              "max_tokens": max_tokens, "temperature": temp,
+              "reasoning_effort": "none"},
         timeout=timeout,
     )
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"].strip()
+    msg = r.json()["choices"][0]["message"]
+    content = msg.get("content", "").strip()
+    if not content:
+        content = msg.get("reasoning_content", " ")
+    return content.strip()
 
 
 def _deepseek_call(prompt: str, max_tokens: int = 4096, temp: float = 0.1,
